@@ -28,7 +28,6 @@ Icons: [icons8](https://icons8.com/)
 
 Usability:
 - Add better playlist managment.
-- Add songs cache.
 - Add proper version checking and build checking for update.
 - Add custom messages.
 - add a check for file size when adding songs.
@@ -44,6 +43,7 @@ Technical:
 - Improve performance of some functions.
 - Improve error handling / reporting. 
 - Reduce startup time.
+- Add songs cache.
 
 #
 <p align="center"><img src="images/horizontal.png" alt="Sounder" height="120px"></p>
