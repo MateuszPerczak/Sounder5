@@ -1,1 +1,1 @@
-{"page": "Settings", "wheel_acceleration": 3.0, "updates": true, "folders": ["C:/Users/Mateusz/Music"], "use_system_theme": true, "theme": "Dark", "playlists": {"Favorites": {"Name": "Favorites", "Songs": []}, "OR1O": {"Name": "Playlist 1", "Songs": []}}}
+{"page": "Settings", "wheel_acceleration": 3.0, "updates": false, "folders": ["C:/Users/Mateusz/Music"], "use_system_theme": true, "theme": "Dark", "playlists": {"Favorites": {"Name": "Favorites", "Songs": []}, "OR1O": {"Name": "Playlist 1", "Songs": []}}}

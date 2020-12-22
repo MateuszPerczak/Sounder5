@@ -53,6 +53,8 @@ class Sounder(Tk):
         basicConfig(filename='errors.log', level=ERROR)
 
     def log(self: ClassVar, err_obj: ClassVar) -> None:
+        # DING!!!!!!
+        self.bell()
         # log error to file
         error(err_obj, exc_info=True)
         self.error_label['text'] = format_exc().split("\n")[-2]
@@ -63,7 +65,7 @@ class Sounder(Tk):
             # variables
             default_settings: dict = {'wheel_acceleration': 1.0, 'updates': True, 'folders': [], 'use_system_theme': True, 'theme': 'Light', 'page': 'Library', 'playlists': {'Favorites': {'Name': 'Favorites', 'Songs': []}}}
             self.settings: dict = {}
-            self.version: tuple = ('0.4.0', '211220')
+            self.version: tuple = ('0.4.0', '221220')
             # load settings
             if isfile('Resources\\Settings\\Settings.json'):
                 with open('Resources\\Settings\\Settings.json', 'r') as data:
@@ -88,6 +90,10 @@ class Sounder(Tk):
         # check for updates
         if self.settings['updates']:
             self.after(5000, self.update_thread)
+        # bind scroll to content
+        self.bind('<MouseWheel>', self.on_wheel)
+        # bind escape to root window 
+        self.bind('<Escape>', lambda _: self.focus_set())
 
     def save_settings(self: ClassVar) -> None:
         # save last page
@@ -152,8 +158,9 @@ class Sounder(Tk):
         # self.layout.configure('Horizontal.TScale', troughcolor='#151515', background='#333', relief="flat", gripcount=0, darkcolor="#151515", lightcolor="#151515", bordercolor='#151515')
         self.layout.configure('Horizontal.TScale', troughcolor=theme[self.settings['theme']][0], background=theme[self.settings['theme']][1], relief='flat', gripcount=0, darkcolor=theme[self.settings['theme']][0], lightcolor=theme[self.settings['theme']][0], bordercolor=theme[self.settings['theme']][0])
         # entry
-        self.layout.configure('TEntry', background=theme[self.settings['theme']][1],  foreground=theme[self.settings['theme']][3], fieldbackground=theme[self.settings['theme']][0], selectforeground=theme[self.settings['theme']][3], selectbackground=theme[self.settings['theme']][2], font=('catamaran 20 bold'))
-        self.layout.map('TEntry', foreground=[('active', '!disabled', 'disabled', theme[self.settings['theme']][3])])   
+        self.layout.configure('TEntry', background=theme[self.settings['theme']][1],  foreground=theme[self.settings['theme']][3], fieldbackground=theme[self.settings['theme']][0], selectforeground=theme[self.settings['theme']][3], selectbackground=theme[self.settings['theme']][2])
+        self.layout.map('TEntry', foreground=[('active', '!disabled', 'disabled', theme[self.settings['theme']][3])]) 
+        self.layout.configure('second.TEntry', background=theme[self.settings['theme']][0])
         del theme
 
     def load_icons(self: ClassVar) -> None:
@@ -189,6 +196,7 @@ class Sounder(Tk):
             'download': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\download.png').resize((25, 25))),
             'wheel': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\wheel.png').resize((25, 25))),
             'cache': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\cache.png').resize((25, 25))),
+            'search': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\search.png').resize((25, 25))),
 
             }
         self.iconphoto(False, self.icons['logo'])
@@ -271,10 +279,16 @@ class Sounder(Tk):
         self.settings_options.place(x=0, y=0, relwidth=1, relheight=1)
         # library options
         self.library_options: ClassVar = ttk.Frame(player_options_panel)
-
-
+        ttk.Label(self.library_options, image=self.icons['library'], text='Library', style='fourth.TLabel', compound='left').pack(side='left', anchor='c', padx=(10, 0))
+        ttk.Button(self.library_options, image=self.icons['menu'], style='second.TButton').pack(side='right', anchor='c')
+        # library search bar
+        search_panel: ClassVar = ttk.Frame(self.library_options)
+        self.lib_search: ClassVar = ttk.Button(search_panel, image=self.icons['search'], style='second.TButton', command=self.open_search)
+        self.lib_search.pack(side='right', anchor='c')
+        self.lib_entry: ClassVar =ttk.Entry(search_panel, exportselection=False, font=('catamaran 15 bold'), width=12, style='second.TEntry')
+        self.lib_entry.bind('<Return>', self.search)
+        search_panel.pack(side='right', anchor='c', padx=(0, 10))
         self.library_options.place(x=0, y=0, relwidth=1, relheight=1)
-
         player_options_panel.pack(side='top', fill='x', ipady=28.5)
         # player content
         self.player_canvas: ClassVar = Canvas(player_top_panel, background=self['background'], bd=0, highlightthickness=0, yscrollcommand=player_content_scroll.set, takefocus=False)
@@ -376,8 +390,6 @@ class Sounder(Tk):
         # show last panels
         self.player_panel.lift()
         self.show_panel()
-        # bind scroll to content
-        self.bind('<MouseWheel>', self.on_wheel)
 
     def exit_app(self: ClassVar) -> None:
         self.withdraw()
@@ -451,9 +463,12 @@ class Sounder(Tk):
                 self.playlist_an['image'] = self.icons['heart'][1]
                 self.playlist_remove.state(['disabled'])
                 self.playlist_entry.state(['disabled'])
+                self.playlist_entry.configure(cursor='no')
+                
             else:
                 self.playlist_an['image'] = self.icons['playlist']
                 self.playlist_remove.state(['!disabled'])
+                self.playlist_entry.configure(cursor='ibeam')
         del selected_playlist
 
     def add_playlist(self: ClassVar) -> None:
@@ -531,7 +546,6 @@ class Sounder(Tk):
                 if file.endswith(('.mp3', '.flac', '.wav', '.ogg')) and file not in self.songs:
                     self.songs.append(abspath(join(folder, file)))
 
-
     def change_theme(self: ClassVar) -> None:
         try:
             theme: str = self.theme.get()
@@ -551,21 +565,41 @@ class Sounder(Tk):
         self.settings['wheel_acceleration'] = round(self.wheel_acceleration.get(), 0)
 
     def check_update(self: ClassVar) -> None:
-        server_version: str = get('https://raw.githubusercontent.com/losek1/Sounder4/master/updates/version.txt').text
-        print(server_version)
-        # if int(self.VERSION.replace('.', '')) < int(server_version.replace('.', '')):
-        #     pass
-    '''
-    Todo:
-    +add proper version checking and build checking for update
-    +add custom messages
-    +add a function that disables music playback when critical
-    + add a check for file size when adding songs
-    '''
+        try:
+            server_version: str = get('https://raw.githubusercontent.com/losek1/Sounder5/master/updates/version.txt').text
+            if server_version != self.version[0] and int(server_version.replace('.', '')) > int(self.version[1].replace('.', '')):
+                print("Updating")
+            else:
+                print("Not updating")
+        except Exception as err_obj:
+            self.log(err_obj)
 
 
     def update_thread(self: ClassVar) -> None:
         Thread(target=self.check_update, daemon=True).start()
+
+    def open_search(self: ClassVar) -> None:
+        entry_content: str = self.lib_entry.get()
+        if entry_content:
+            self.search()
+        else:
+            if self.lib_entry.winfo_ismapped():
+                self.lib_entry.pack_forget()
+                self.lib_search.config(style='second.TButton')
+            else:
+                self.lib_entry.pack(side='right', anchor='c')
+                self.lib_search.config(style='third.TButton')
+        del entry_content
+
+    def search(self: ClassVar, _: Event=None) -> None:
+        allowed_chars: str = 'abcdefghijklmnopqrstuvwxyz123456789.'
+        entry_content: str = self.lib_entry.get().lower()
+        clean_content: str = ''
+        for letter in entry_content:
+            if letter in allowed_chars:
+                clean_content += letter
+        print(clean_content)
+
 
 if __name__ == '__main__':
     Sounder().mainloop()
