@@ -65,7 +65,7 @@ class Sounder(Tk):
             # variables
             default_settings: dict = {'wheel_acceleration': 1.0, 'updates': True, 'folders': [], 'use_system_theme': True, 'theme': 'Light', 'page': 'Library', 'playlists': {'Favorites': {'Name': 'Favorites', 'Songs': []}}}
             self.settings: dict = {}
-            self.version: tuple = ('0.4.0', '221220')
+            self.version: tuple = ('0.4.2', '231220')
             # load settings
             if isfile('Resources\\Settings\\Settings.json'):
                 with open('Resources\\Settings\\Settings.json', 'r') as data:
@@ -80,6 +80,8 @@ class Sounder(Tk):
             for key in default_settings:
                 self.settings[key] =  self.settings.get(key, default_settings[key])
             del default_settings
+            # verify playlist
+            if not 'Favorites' in self.settings['playlists']: self.settings['playlists']['Favorites'] = {'Name': 'Favorites', 'Songs': []}
         except Exception as err_obj:
             self.log(err_obj)
 
@@ -137,6 +139,7 @@ class Sounder(Tk):
         self.layout.configure('third.TLabel', background=theme[self.settings['theme']][1], foreground=theme[self.settings['theme']][3])
         self.layout.configure('fourth.TLabel', background=theme[self.settings['theme']][1], foreground=theme[self.settings['theme']][3], font=('catamaran 16 bold'))
         self.layout.configure('sixth.TLabel', background=theme[self.settings['theme']][1], foreground=theme[self.settings['theme']][3])
+
         # radiobutton
         self.layout.configure('TRadiobutton', background=theme[self.settings['theme']][0], relief='flat', font=('catamaran 13 bold'), foreground=theme[self.settings['theme']][3], anchor='w', padding=5, width=12)
         self.layout.map('TRadiobutton', background=[('pressed', '!disabled', theme[self.settings['theme']][1]), ('active', theme[self.settings['theme']][1]), ('selected', theme[self.settings['theme']][1])])
@@ -368,18 +371,17 @@ class Sounder(Tk):
         self.volume_bar.pack(side='left', anchor='center', padx=5, fill='x', expand=True)
         volume_panel.place(relx=1, y=10, relwidth=0.22, height=48, anchor='ne')
         player_bot_panel.pack(side='top', fill='x', ipady=45)
-
         self.player_panel.place(x=0, y=0, relwidth=1, relheight=1)
         # error panel
         self.error_panel: ClassVar = ttk.Frame(self)
         error_content: ClassVar = ttk.Frame(self.error_panel)
         ttk.Label(error_content, image=self.icons['error'], text='Something went wrong', compound='top', style='second.TLabel').pack(side='top')
-        self.error_label: ClassVar = ttk.Label(error_content, text='We are unable to display the error message', style='third.TLabel')
+        self.error_label: ClassVar = ttk.Label(error_content, text='We are unable to display the error message!', style='third.TLabel')
         self.error_label.pack(side='top')
         ttk.Button(error_content, text='OK', style='third.TButton', command=self.exit_app).pack(side='top', pady=(50, 0), padx=10)
         ttk.Button(error_content, text='Open Logs', style='third.TButton', command=self.open_logs).pack(side='top', pady=(10, 0), padx=10)
-        ttk.Label(self.error_panel, text=f'version: {self.version[0]} [build: {self.version[1]}]', style='third.TLabel').pack(side='bottom', anchor='w', padx=10, pady=5)
         error_content.place(relx=.5, rely=.5, anchor='c')
+        ttk.Label(self.error_panel, text=f'version: {self.version[0]} [build: {self.version[1]}]', style='third.TLabel').pack(side='bottom', anchor='w', padx=10, pady=5)
         self.error_panel.place(x=0, y=0, relwidth=1, relheight=1)
         
     def init_player(self: ClassVar) -> None:
@@ -387,9 +389,12 @@ class Sounder(Tk):
         self.songs: list = []
         # scan folders
         self.scan_folders()
-        # show last panels
+        # show last panel
         self.player_panel.lift()
-        self.show_panel()
+        if not self.settings['page'] in self.settings['playlists']:
+            self.show_panel()
+        else:
+            self.show_playlist()
 
     def exit_app(self: ClassVar) -> None:
         self.withdraw()
@@ -461,14 +466,20 @@ class Sounder(Tk):
             # change icon acording to playlist type and disable some buttons
             if selected_playlist == 'Favorites':
                 self.playlist_an['image'] = self.icons['heart'][1]
-                self.playlist_remove.state(['disabled'])
+
+                # self.playlist_remove.state(['disabled'])
+                self.playlist_remove['text'] = 'Reset favorites'
+
                 self.playlist_entry.state(['disabled'])
+
                 self.playlist_entry.configure(cursor='no')
                 
             else:
                 self.playlist_an['image'] = self.icons['playlist']
-                self.playlist_remove.state(['!disabled'])
+                # self.playlist_remove.state(['!disabled'])
                 self.playlist_entry.configure(cursor='ibeam')
+
+                self.playlist_remove['text'] = 'Remove playlist'
         del selected_playlist
 
     def add_playlist(self: ClassVar) -> None:
@@ -573,7 +584,6 @@ class Sounder(Tk):
                 print("Not updating")
         except Exception as err_obj:
             self.log(err_obj)
-
 
     def update_thread(self: ClassVar) -> None:
         Thread(target=self.check_update, daemon=True).start()

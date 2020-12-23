@@ -56,6 +56,7 @@ Technical:
 - Improve error handling / reporting. 
 - Reduce startup time.
 - Add updater.
+- Add a way to reset favorites playlist.
 
 #
 
