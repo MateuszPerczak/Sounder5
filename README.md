@@ -42,6 +42,7 @@ Usability:
 - Add a check for file size when adding songs.
 - Create a new engine for managing the playback of songs.
 - Write godlike search function.
+- Add a setup window.
 
 Visual:
 
@@ -56,7 +57,7 @@ Technical:
 - Improve error handling / reporting. 
 - Reduce startup time.
 - Add updater.
-- Add a way to reset favorites playlist.
+- Modify a scanning function to scan for folders inside a folders.
 
 #
 
