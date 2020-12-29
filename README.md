@@ -2,8 +2,7 @@
 
 ## Music player written in python
 
-Note: Sounder is still in development
-Please keep in mind that the final appearance may change
+Note: Sounder is still in development. Please keep in mind that the final appearance may change!
 
 #
 
@@ -11,18 +10,20 @@ Please keep in mind that the final appearance may change
 
 ## Used Libraries
 
-- tkinter
-- pillow
-- mutagen
-- requests
-- threading
-- os
 - typing
+- tkinter
+- os
 - json
 - logging
 - traceback
+- PIL
+- io
 - random
 - string
+- requests
+- threading
+- mutagen
+- re
 
 ### Sounder logo
 
@@ -40,7 +41,6 @@ Usability:
 - Add proper version checking and build checking for update.
 - Add a check for file size when adding songs.
 - Create a new engine for managing the playback of songs.
-- Write godlike search function.
 
 Visual:
 
@@ -52,10 +52,9 @@ Technical:
 
 - Add a function that disables music playback on crash.
 - Improve performance of some functions.
-- Improve error handling / reporting. 
+- Improve error handling / reporting.
 - Reduce startup time.
 - Add updater.
-- Modify a scanning function to scan for folders inside a folders.
 
 #
 

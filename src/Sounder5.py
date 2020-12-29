@@ -3,13 +3,14 @@ try:
     from tkinter import Tk, ttk, StringVar, BooleanVar, DoubleVar, Canvas, Event
     from tkinter.filedialog import askdirectory
     from tkinter.messagebox import askyesno
-    from os.path import isfile, join, isdir, basename, abspath, join
+    from os.path import isfile, join, isdir, basename, abspath, join, splitext, dirname
     from os import startfile, listdir # getcwd, listdir, startfile, remove
     from json import load, dump
     from json.decoder import JSONDecodeError
     from logging import basicConfig, error, ERROR, getLevelName, getLogger, shutdown
     from traceback import format_exc
     from PIL import Image, ImageTk
+    from io import BytesIO
     from random import choices
     from string import ascii_uppercase, digits
     from Components.SystemTheme import get_theme
@@ -18,6 +19,8 @@ try:
     from requests import get
     from threading import Thread
     from mutagen.mp3 import MP3
+    from mutagen.flac import FLAC
+    from re import findall
 except ImportError as err:
     exit(err)
 
@@ -65,9 +68,9 @@ class Sounder(Tk):
     def init_settings(self: ClassVar) -> None:
         try:
             # variables
-            default_settings: dict = {'scan_subfolders': False, 'geometry': '800x500', 'wheel_acceleration': 1.0, 'updates': True, 'folders': [], 'use_system_theme': True, 'theme': 'Light', 'page': 'Library', 'playlists': {'Favorites': {'Name': 'Favorites', 'Songs': []}}}
+            default_settings: dict = {'filter': 'A-Z', 'scan_subfolders': False, 'geometry': '800x500', 'wheel_acceleration': 1.0, 'updates': True, 'folders': [], 'use_system_theme': True, 'theme': 'Light', 'page': 'Library', 'playlists': {'Favorites': {'Name': 'Favorites', 'Songs': []}}}
             self.settings: dict = {}
-            self.version: tuple = ('0.4.6', '281220')
+            self.version: tuple = ('0.4.7', '281220')
             # load settings
             if isfile('Resources\\Settings\\Settings.json'):
                 with open('Resources\\Settings\\Settings.json', 'r') as data:
@@ -147,7 +150,6 @@ class Sounder(Tk):
         self.layout.configure('fourth.TLabel', background=theme[self.settings['theme']][1], font=('catamaran 16 bold'))
         self.layout.configure('sixth.TLabel', background=theme[self.settings['theme']][1])
         self.layout.configure('seventh.TLabel', background=theme[self.settings['theme']][0], font=('catamaran 10 bold'))
-
         self.layout.configure('eighth.TLabel', background=theme[self.settings['theme']][0], font=('catamaran 8 bold'))
         # radiobutton
         self.layout.configure('TRadiobutton', background=theme[self.settings['theme']][0], relief='flat', font=('catamaran 13 bold'), foreground=theme[self.settings['theme']][3], anchor='w', padding=5, width=12)
@@ -216,6 +218,7 @@ class Sounder(Tk):
         # variables
         self.menu_option: StringVar = StringVar(value=self.settings['page'])
         self.menu_playlist: StringVar = StringVar(value=self.settings['page'])
+        self.filter: StringVar = StringVar(value=self.settings['filter'])
         self.last_panel: str = ''
         self.folder_panels: dict = {}
         self.song_panels: dict = {}
@@ -261,8 +264,8 @@ class Sounder(Tk):
         self.playlist_an.pack(side='left', anchor='c', padx=(10, 0))
         self.playlist_an.bind('<Double-Button-1>', lambda _: self.playlist_options.lift())
         # playlist menu button
-        ttk.Button(self.playlist_panel, image=self.icons['menu'], style='second.TButton', command=lambda: self.playlist_options.lift()).pack(side='right', anchor='c', padx=(10, 0))
-        ttk.Button(self.playlist_panel, image=self.icons['filter'], style='second.TButton').pack(side='right', anchor='c', padx=(10, 0))
+        ttk.Button(self.playlist_panel, image=self.icons['menu'], style='second.TButton', command=lambda: self.playlist_options.lift()).pack(side='right', anchor='c', padx=(0, 15))
+        ttk.Button(self.playlist_panel, image=self.icons['filter'], style='second.TButton').pack(side='right', anchor='c', padx=(0, 5))
         self.playlist_panel.place(x=0, y=0, relwidth=1, relheight=1)
         # playlist options
         self.playlist_options: ClassVar = ttk.Frame(player_options_panel)
@@ -289,15 +292,15 @@ class Sounder(Tk):
         # library options
         self.library_options: ClassVar = ttk.Frame(player_options_panel)
         ttk.Label(self.library_options, image=self.icons['library'], text='Library', style='fourth.TLabel', compound='left').pack(side='left', anchor='c', padx=(10, 0))
-        ttk.Button(self.library_options, image=self.icons['menu'], style='second.TButton').pack(side='right', anchor='c')
-        ttk.Button(self.library_options, image=self.icons['filter'], style='second.TButton').pack(side='right', anchor='c', padx=(0, 10))
+        ttk.Button(self.library_options, image=self.icons['menu'], style='second.TButton').pack(side='right', anchor='c', padx=(0, 15))
+        ttk.Button(self.library_options, image=self.icons['filter'], style='second.TButton').pack(side='right', anchor='c', padx=(0, 5))
         # library search bar
         search_panel: ClassVar = ttk.Frame(self.library_options)
         self.lib_search: ClassVar = ttk.Button(search_panel, image=self.icons['search'], style='second.TButton', command=self.open_search)
         self.lib_search.pack(side='right', anchor='c')
         self.lib_entry: ClassVar =ttk.Entry(search_panel, exportselection=False, font=('catamaran 15 bold'), width=12, style='second.TEntry')
         self.lib_entry.bind('<Return>', self.search)
-        search_panel.pack(side='right', anchor='c', padx=(0, 10))
+        search_panel.pack(side='right', anchor='c', padx=(0, 5))
         self.library_options.place(x=0, y=0, relwidth=1, relheight=1)
         player_options_panel.pack(side='top', fill='x', ipady=28.5)
         # player content
@@ -330,14 +333,6 @@ class Sounder(Tk):
         ttk.Label(settings_acceleration, text='Fast').pack(side='right', anchor='c', fill='y', pady=10, padx=10)
         ttk.Scale(settings_acceleration, variable=self.wheel_acceleration, from_=0, to=8, command=self.change_acceleration).pack(side='right', anchor='c', fill='x', ipadx=20)
         ttk.Label(settings_acceleration, text='Slow').pack(side='right', anchor='c', fill='y', pady=10, padx=10)
-        # cache
-        settings_cache: ClassVar = ttk.Frame(self.player_content, style='second.TFrame')
-        cache_panel: ClassVar = ttk.Frame(settings_cache, style='second.TFrame')
-        ttk.Label(cache_panel, image=self.icons['cache'], text='Music cache mode', compound='left').pack(side='left', anchor='c', fill='y')
-        ttk.Radiobutton(cache_panel, text='Dynamic', style='third.TRadiobutton', value='Dynamic').pack(side='right', anchor='c')
-        ttk.Radiobutton(cache_panel, text='Static', style='third.TRadiobutton', value='Static').pack(side='right', anchor='c', padx=(10, 10))
-        cache_panel.pack(side='top', fill='x', pady=10, padx=10)
-        ttk.Label(settings_cache, image=self.icons['info'], text='Note: We recommend using \'Dynamic\' mode for best performance!', compound='left').pack(side='top', fill='x', padx=10, pady=(0, 10))
         # updates
         settings_updates: ClassVar = ttk.Frame(self.player_content, style='second.TFrame')
         ttk.Label(settings_updates, image=self.icons['download'], text='Check for updates', compound='left').pack(side='left', anchor='c', fill='y', pady=10, padx=10)
@@ -358,8 +353,17 @@ class Sounder(Tk):
         ttk.Radiobutton(subfolders_panel, text='Yes', style='second.TRadiobutton', value=True, variable=self.scan_subfolders, command=self.change_subfolders).pack(side='right', anchor='c')
         subfolders_panel.pack(side='top', fill='x', pady=10, padx=10)
         ttk.Label(settings_subfolders, image=self.icons['info'], text='Note: Scanning subfolders may affect performance!', compound='left').pack(side='top', fill='x', padx=10, pady=(0, 10))
-        # update variable
-        self.settings_panels = (settings_acceleration, settings_theme, settings_subfolders, settings_cache, settings_updates, settings_about)
+        # file types
+        settings_filter: ClassVar = ttk.Frame(self.player_content, style='second.TFrame')
+        filter_panel: ClassVar = ttk.Frame(settings_filter, style='second.TFrame')
+        ttk.Label(filter_panel, image=self.icons['filter'], text='Songs filter', compound='left').pack(side='left', anchor='c', fill='y')
+        ttk.Radiobutton(filter_panel, text='No', style='second.TRadiobutton', value=False).pack(side='right', anchor='c', padx=(10, 0))
+        ttk.Radiobutton(filter_panel, text='Yes', style='second.TRadiobutton', value=True).pack(side='right', anchor='c')
+        filter_panel.pack(side='top', fill='x', pady=10, padx=10)
+
+
+        # panels variable
+        self.settings_panels = (settings_acceleration, settings_theme, settings_subfolders, settings_filter, settings_updates, settings_about)
         # bottom panel
         player_bot_panel: ClassVar = ttk.Frame(self.player_panel, style='second.TFrame')
         # buttons, song name, etc ...
@@ -407,15 +411,13 @@ class Sounder(Tk):
         self.songs_cache: dict = {}
         # scan folders
         self.scan_folders()
+        # verify playlists
+        self.verify_playlist()
         # show last panel
         if self.settings['page'] in ('Library', 'Folders', 'Settings'):
             self.show_panel()
         else:
             self.show_playlist()
-        # if not self.settings['page'] in self.settings['playlists']:
-        #     self.show_panel()
-        # else:
-        #     self.show_playlist()
 
     def exit_app(self: ClassVar) -> None:
         self.withdraw()
@@ -450,6 +452,10 @@ class Sounder(Tk):
                 for song in self.song_panels:
                     if self.song_panels[song].winfo_ismapped():
                         self.song_panels[song].pack_forget()  
+            if self.last_panel in self.settings['playlists']:
+                for song in self.settings['playlists'][self.last_panel]['Songs']:
+                    if song in self.songs and self.song_panels[song].winfo_ismapped():
+                        self.song_panels[song].pack_forget()  
             # pack
             if panel == 'Folders':
                 for folder in self.folder_panels:
@@ -460,18 +466,9 @@ class Sounder(Tk):
                     if not setting.winfo_ismapped():
                         setting.pack(side='top', fill='x', pady=5, padx=10)
             if panel == 'Library':
-                # apply flter
-                # apply search
-                # apply mode
-                for song in self.song_panels:
-                    if not self.song_panels[song].winfo_ismapped():
-                        self.song_panels[song].pack(side='top', fill='x', pady=5, padx=10)
+                self.sort_panels('', self.songs)
             if panel in self.settings['playlists']:
-                # apply flter
-                # apply mode
-                for song in self.settings['playlists'][panel]['Songs']:
-                    if not self.song_panels[song].winfo_ismapped():
-                        self.song_panels[song].pack(side='top', fill='x', pady=5, padx=10)
+                self.sort_panels('', self.settings['playlists'][panel]['Songs'])
         self.last_panel = panel
 
     def open_logs(self: ClassVar) -> None:
@@ -559,12 +556,23 @@ class Sounder(Tk):
         except Exception as err_obj:
             self.log(err_obj)
 
+    def verify_playlist(self: ClassVar) -> None:
+        try:
+            for playlist in self.settings['playlists']:
+                for song in self.settings['playlists'][playlist]['Songs']:
+                    if song not in self.songs:
+                        self.settings['playlists'][playlist]['Songs'].remove(song)
+        except Exception as err_obj:
+            self.log(err_obj)
+
     def new_folder(self: ClassVar) -> None:
         new_dir: str = askdirectory()
         if new_dir and new_dir not in self.settings['folders']:
+            new_dir = abspath(new_dir)
             self.settings['folders'].append(new_dir)
             self.add_folder(new_dir)
             self.folder_panels[new_dir].pack(side='top', fill='both', expand=True, pady=5, padx=10)
+            Thread(target=self.scan_folders, daemon=True).start()
         del new_dir
 
     def add_folder(self: ClassVar, path: str) -> None:
@@ -582,7 +590,16 @@ class Sounder(Tk):
         if askyesno('Remove folder', 'Are you sure you want to remove this folder?', icon='warning') and path in self.settings['folders']:
             self.folder_panels[path].destroy()
             self.settings['folders'].remove(path)
+            self.remove_songs(path)
             del self.folder_panels[path]
+
+    def remove_songs(self: ClassVar, path: str) -> None:
+        path = abspath(path)
+        temp_songs: list = self.songs.copy()
+        for song in temp_songs:
+            if dirname(song) == path:
+                self.remove_song(song)
+        del temp_songs
 
     def scan_folders(self: ClassVar) -> None:
         try:
@@ -593,7 +610,7 @@ class Sounder(Tk):
                         if file.endswith(('.mp3', '.flac', '.wav', '.ogg')) and file not in self.songs:
                             self.songs.append(abspath(join(folder, file)))              
                         elif isdir(join(folder, file)) and file not in ('System Volume Information', '$RECYCLE.BIN') and file not in folders:
-                            folders.append(join(folder, file))
+                            folders.append(abspath(join(folder, file)))
                 del folders
             else:
                 for folder in self.settings['folders']:
@@ -653,36 +670,79 @@ class Sounder(Tk):
         del entry_content
 
     def search(self: ClassVar, _: Event=None) -> None:
-        allowed_chars: str = 'abcdefghijklmnopqrstuvwxyz123456789.'
+        allowed_chars: str = 'abcdefghijklmnopqrstuvwxyz123456789. '
         entry_content: str = self.lib_entry.get().lower()
         clean_content: str = ''
         for letter in entry_content:
             if letter in allowed_chars:
                 clean_content += letter
-        print(clean_content)
+        self.sort_panels(clean_content, self.songs)
+        del allowed_chars, entry_content, clean_content
+
+    def sort_panels(self: ClassVar, search_word: str, songs: list) -> None:
+        temp_songs: list = []
+        song_filter: str = self.filter.get()
+        # apply search
+        if search_word:
+            for song in songs:
+                result = f'{self.songs_cache[song]["title"]} {self.songs_cache[song]["artist"]} {self.songs_cache[song]["album"]} {song}'
+                if findall(search_word, result.lower()):
+                    temp_songs.append(song)
+        else:
+            temp_songs = songs.copy()
+        # apply filter
+        if song_filter == 'A-Z':
+            temp_songs.sort()
+        elif song_filter == 'Z-A':
+            temp_songs.sort(reverse=True)
+        # forget panels
+        for song in list(set(temp_songs)^set(songs)):
+            if song in self.songs and song in self.song_panels and self.song_panels[song].winfo_ismapped():
+                self.song_panels[song].pack_forget()
+        # pack panels
+        for song in temp_songs:
+            if song in self.songs and song in self.song_panels and not self.song_panels[song].winfo_ismapped():
+                self.song_panels[song].pack(side='top', fill='x', pady=5, padx=10)
+        del temp_songs, song_filter
 
     def cache_song(self: ClassVar, song: str) -> None:
         album_art: ClassVar = self.icons['note']
-        song_title: str = basename(song)
+        song_title: str = splitext(song)[0]
         song_artist: str = 'Unknown'
         album: str = 'Unknown'
-
+        song_metadata: ClassVar = None
         if song.endswith('.mp3'):
             song_metadata: ClassVar = MP3(song)
-
-
-        self.songs_cache[song]: dict =  {'title': song_title, 'artist': song_artist, 'album': album, 'album_art': album_art}
-
+            if 'TIT2' in song_metadata:
+                song_title = song_metadata['TIT2']
+            if 'TPE1' in song_metadata:
+                song_artist = song_metadata['TPE1']
+            if 'TALB' in song_metadata:
+                album = song_metadata['TALB']
+            if 'APIC:' in song_metadata:
+                album_art = ImageTk.PhotoImage(Image.open(BytesIO(song_metadata.get('APIC:').data)).resize((25, 25)))
+        elif song.endswith('.flac'):
+            song_metadata: ClassVar = FLAC(song)
+            if 'title' in song_metadata:
+                song_title = song_title.join(song_metadata['title'])
+            if 'artist' in song_metadata:
+                song_artist = song_artist.join(song_metadata['artist'])
+            if 'album' in song_metadata:
+                album = album.join(song_metadata['album'])
+            if song_metadata.pictures:
+                album_art = ImageTk.PhotoImage(Image.open(BytesIO(song_metadata.pictures[0].data)).resize((25, 25)))
+        # cache data
+        self.songs_cache[song]: dict =  {'title': song_title, 'artist': song_artist, 'album': album, 'album_art': album_art, 'length': song_metadata.info.length}
+        del album_art, song_artist, song_title, album, song_metadata
 
     def new_song(self: ClassVar, song: str) -> None:
         self.cache_song(song)
-
         self.add_song(song)
 
     def add_song(self: ClassVar, song: str) -> None:
         try:
             self.song_panels[song]: ClassVar = ttk.Frame(self.player_content, style='second.TFrame')
-            ttk.Label(self.song_panels[song], image=self.songs_cache[song]['album_art']).pack(side='left', anchor='c', fill='y', pady=10, padx=10)
+            ttk.Label(self.song_panels[song], image=self.songs_cache[song]['album_art']).pack(side='left', anchor='c', pady=10, padx=10)
             info_frame: ClassVar = ttk.Frame(self.song_panels[song], style='second.TFrame')
             ttk.Label(info_frame, text=f'{self.songs_cache[song]["title"]}', style='seventh.TLabel').place(x=5, y=5)
             ttk.Label(info_frame, text=f'{self.songs_cache[song]["artist"]}', style='eighth.TLabel').place(x=5, y=28)
@@ -696,9 +756,13 @@ class Sounder(Tk):
             self.log(err_obj)
 
     def remove_song(self: ClassVar, song: str) -> None:
-        if song in self.song_panels:
-            self.song_panels[song].destroy()
-            del self.song_panels[song]
+        try:
+            if song in self.song_panels and song in self.songs:
+                self.song_panels[song].destroy()
+                del self.song_panels[song], self.songs_cache[song]
+                self.songs.remove(song)
+        except Exception as err_obj:
+            self.log(err_obj)
 
     def favorites_song(self: ClassVar, song: str) -> None:
         if song in self.settings['playlists']['Favorites']['Songs']:
