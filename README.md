@@ -50,7 +50,6 @@ Visual:
 
 Technical:
 
-- Add a function that disables music playback on crash.
 - Improve performance of some functions.
 - Improve error handling / reporting.
 - Reduce startup time.
