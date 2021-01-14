@@ -17,10 +17,11 @@ class SSetup(Toplevel):
         # variables
         self.settings = settings
         self.parent = parent
+        self.pages: int = 4
         # hide window
         self.withdraw()
         # configure window
-        self.minsize(500, 620)
+        self.geometry(f'500x620+{int(self.winfo_x() + ((self.winfo_screenwidth() / 2) - 250))}+{int(self.winfo_y() + ((self.winfo_screenheight() / 2) - 310))}')
         self.resizable(False, False)
         self.title('Sounder configurator')
         self.protocol('WM_DELETE_WINDOW', self.exit_app)
@@ -41,7 +42,6 @@ class SSetup(Toplevel):
         self.destroy()
         
     def init_layout(self: ClassVar) -> None:
-
         # init theme object
         self.layout: ClassVar = ttk.Style()
         # set theme to clam
@@ -61,7 +61,7 @@ class SSetup(Toplevel):
         pages_panel: ClassVar = ttk.Frame(self)
         pages_panel.pack(side='top', fill='both', expand=True)
         # progress
-        self.progress_bar: ClassVar = ttk.Progressbar(self, maximum=400, value=0)
+        self.progress_bar: ClassVar = ttk.Progressbar(self, maximum=self.pages * 100, value=0)
         self.progress_bar.pack(side='bottom', fill='x')
         # page 1
         welcome_panel: ClassVar = ttk.Frame(pages_panel)
@@ -118,7 +118,7 @@ class SSetup(Toplevel):
         final_panel: ClassVar = ttk.Frame(pages_panel)
         final_content: ClassVar = ttk.Frame(final_panel)
         ttk.Label(final_content, text='That\'s all!', style='second.TLabel').pack(side='top', pady=10, anchor='c')
-        ttk.Button(final_content, text='Finish', image=self.icons['checkmark'], compound='right', style='second.TButton', command=self.exit_app).pack(side='top', pady=10, anchor='c')
+        ttk.Button(final_content, text='Finish', image=self.icons['checkmark'], compound='left', style='second.TButton', command=self.exit_app).pack(side='top', pady=10, anchor='c')
         final_content.pack(anchor='c', padx=10, pady=10, expand=True)
         final_panel.place(x=0, y=0, relwidth=1, relheight=1)
         # show welcome panel 
@@ -194,13 +194,13 @@ class SSetup(Toplevel):
         self.settings['updates'] = self.updates.get()
 
     def next_page(self: ClassVar, page: ClassVar) -> None:
-        Thread(target=self.animate_progress, args=(100, ), daemon=True).start()
+        Thread(target=self.update_progress, daemon=True).start()
         page.lift()
 
-    def animate_progress(self: ClassVar, value: int) -> None:
-        for _ in range(int((value + 4) / 8)):
-            self.progress_bar['value'] += 8
-            sleep(0.0001)
-        if self.progress_bar['value'] > 400:
+    def update_progress(self: ClassVar) -> None:
+        for _ in range(10):
+            self.progress_bar['value'] += 10
+            sleep(0.01)
+        if self.progress_bar['value'] == self.pages * 100:
             self.progress_bar['value'] = 0
 

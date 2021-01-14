@@ -402,6 +402,6 @@ class Debugger:
             self.unhighlight_elements()
             self.img_window.destroy()
             self.main_window.destroy()
-            del self
+            self.main_window.quit()
         except Exception as _:
             print(format_exc())
