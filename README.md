@@ -37,7 +37,6 @@ Icons: [icons8](https://icons8.com/)
 
 Usability:
 
-- Add better playlist managment.
 - Add proper version checking and build checking for update.
 - Add a check for file size when adding songs.
 - Create a new engine for managing the playback of songs.
@@ -50,7 +49,6 @@ Visual:
 
 Technical:
 
-- Improve performance of some functions.
 - Improve error handling / reporting.
 - Reduce startup time.
 - Add updater.
