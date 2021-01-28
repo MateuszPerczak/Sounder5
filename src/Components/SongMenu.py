@@ -69,7 +69,6 @@ class SongMenu(Toplevel):
             self.delete_button.state(['disabled'])
         else:
             self.delete_button.state(['!disabled'])
-        del selected_playlist
 
     def set_position(self: ClassVar) -> None:
         # get mouse position
@@ -86,7 +85,6 @@ class SongMenu(Toplevel):
                 self.geometry(f'+{button_position[0] + 45}+{button_position[1] - 6}')
         else:
             self.geometry(f'+{mouse_pos[0]}+{mouse_pos[1]}')
-        del mouse_pos, dimensions, button, button_position
 
     def animate(self: ClassVar) -> None:
         # get window dimensions
@@ -99,7 +97,6 @@ class SongMenu(Toplevel):
             self.update()
         # reset geometry after animation
         self.geometry('')
-        del dimensions, num_of_panels, speed
         # ready
         self.animation = None
 
@@ -128,8 +125,6 @@ class SongMenu(Toplevel):
             if not self.playlists[selected_playlist]['Songs']:
                 self.parent.search_panel.pack(side='top', fill='x', pady=5, padx=10)
         self.hide()
-        del selected_playlist
-
 
     def add_to_playlist(self: ClassVar, playlist: str) -> None:
         if playlist in self.playlists and self.song in self.parent.songs and not self.song in self.playlists[playlist]['Songs']:

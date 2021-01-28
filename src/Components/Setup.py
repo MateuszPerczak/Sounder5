@@ -84,7 +84,7 @@ class SSetup(Toplevel):
         self.folder_panels.bind('<Configure>', lambda _: folder_canvas.configure(scrollregion=folder_canvas.bbox("all")))
         folder_window: ClassVar = folder_canvas.create_window((0, 0), window=self.folder_panels, anchor='nw')
         folder_canvas.bind('<Configure>', lambda _: folder_canvas.itemconfigure(folder_window, width=folder_canvas.winfo_width(), height=0))
-        folder_canvas.pack(side='top', padx=10,  pady=10, anchor='c', expand=True, fill='both')
+        folder_canvas.pack(side='top', padx=10,  pady=10, anchor='c', fill='both')
         folder_buttons: ClassVar = ttk.Frame(folder_panel)
         # add folder button
         ttk.Button(folder_buttons, text='Add folder', image=self.icons['plus'], compound='left', style='second.TButton', command=self.add_folder).pack(side='left', pady=5, padx=(10, 25))
@@ -164,6 +164,7 @@ class SSetup(Toplevel):
     def add_folder(self: ClassVar) -> None:
         temp_dir: str = askdirectory()
         if temp_dir and not temp_dir in self.settings['folders']:
+            temp_dir = abspath(temp_dir)
             # add folder to settings
             self.settings['folders'].append(temp_dir)
             # draw folder in app
@@ -188,7 +189,6 @@ class SSetup(Toplevel):
         if theme != 'System':
             self.settings['use_system_theme'] = False
             self.settings['theme'] = theme
-        del theme
 
     def change_updates(self: ClassVar) -> None:
         self.settings['updates'] = self.updates.get()
