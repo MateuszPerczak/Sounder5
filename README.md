@@ -24,6 +24,7 @@ Note: Sounder is still in development. Please keep in mind that the final appear
 - threading
 - mutagen
 - re
+- win10toast (modified)
 
 ### Sounder logo
 
@@ -37,7 +38,6 @@ Icons: [icons8](https://icons8.com/)
 
 Usability:
 
-- Add proper version checking and build checking for update.
 - Add a check for file size when adding songs.
 - Create a new engine for managing the playback of songs.
 
@@ -45,13 +45,11 @@ Visual:
 
 - Add more visual effects to panels.
 - Unify appearance of panels.
-- Add custom messages.
 
 Technical:
 
 - Improve error handling / reporting.
 - Reduce startup time.
-- Add updater.
 
 #
 
