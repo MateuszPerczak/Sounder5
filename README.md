@@ -41,15 +41,6 @@ Usability:
 - Add a check for file size when adding songs.
 - Create a new engine for managing the playback of songs.
 
-Visual:
-
-- Add more visual effects to panels.
-- Unify appearance of panels.
-
-Technical:
-
-- Improve error handling / reporting.
-- Reduce startup time.
 
 #
 
