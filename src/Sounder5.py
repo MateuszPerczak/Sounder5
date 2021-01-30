@@ -86,7 +86,7 @@ class Sounder(Tk):
             # variables
             default_settings: dict = {'shuffle': False, 'start_playback': False, 'playlist': 'Library', 'repeat': 'None', 'buffer': 'Normal', 'last_song': '', 'volume': 0.5, 'sort_by': 'A-Z', 'scan_subfolders': False, 'geometry': '800x500', 'wheel_acceleration': 1.0, 'updates': True, 'folders': [], 'use_system_theme': True, 'theme': 'Light', 'page': 'Library', 'playlists': {'Favorites': {'Name': 'Favorites', 'Songs': []}}}
             self.settings: dict = {}
-            self.version: tuple = ('0.6.2', '290121')
+            self.version: tuple = ('0.6.3', '300121')
             # load settings
             if isfile('Resources\\Settings\\Settings.json'):
                 with open('Resources\\Settings\\Settings.json', 'r') as data:
@@ -450,6 +450,8 @@ class Sounder(Tk):
         info_panel: ClassVar = ttk.Frame(player_bot_panel, style='second.TFrame')
         self.song_album: ClassVar = ttk.Label(info_panel)
         self.song_album.pack(side='left', padx=10, anchor='c')
+        self.favorite_button: ClassVar = ttk.Button(info_panel, image=self.icons['heart'][0],  command=lambda: self.favorites_song(self.song))
+        self.favorite_button.pack(side='right', padx=(5, 0), anchor='c')
         info_frame: ClassVar = ttk.Frame(info_panel, style='second.TFrame')
         self.song_title: ClassVar = ttk.Label(info_frame, text='', style='fifth.TLabel')
         self.song_title.place(x=0, y=4)
@@ -457,7 +459,6 @@ class Sounder(Tk):
         self.song_artist.place(x=0, y=24)
         info_frame.pack(side='left', fill='both', expand=True)
         info_panel.place(relx=0, y=10, relwidth=0.22, height=48, anchor='nw')
-        info_panel.bind('<Expose>', self.update_title_length)
         # bottom frame
         progress_frame: ClassVar = ttk.Frame(player_bot_panel, style='second.TFrame')
         # time passed
@@ -657,7 +658,7 @@ class Sounder(Tk):
         try:
             for playlist in self.settings['playlists']:
                 for song in self.settings['playlists'][playlist]['Songs']:
-                    if song not in self.library:
+                    if not song in self.library:
                         self.settings['playlists'][playlist]['Songs'].remove(song)
         except Exception as err_obj:
             self.log(err_obj)
@@ -778,11 +779,14 @@ class Sounder(Tk):
         self.settings['start_playback'] = self.start_playback.get()
 
     def change_sort(self: ClassVar) -> None:
-        self.settings['sort_by'] = self.sort_by.get()
-        if self.playlist == 'Library':
-            self.sort_panels(self.get_filtered_search(), self.library, True)
-        else:
-            self.sort_panels('', self.settings['playlists'][self.playlist]['Songs'], True)
+        sort_by: str = self.sort_by.get()
+        if sort_by != self.settings['sort_by']:
+            self.settings['sort_by'] = sort_by
+            selected_playlist: str = self.menu_option.get()
+            if selected_playlist == 'Library':
+                self.sort_panels(self.get_filtered_search(), self.library, True)
+            elif selected_playlist in self.settings['playlists']:
+                self.sort_panels('', self.settings['playlists'][selected_playlist]['Songs'], True)
 
     def update_thread(self: ClassVar) -> None:
         Thread(target=self.check_update, daemon=True).start()
@@ -941,9 +945,14 @@ class Sounder(Tk):
         if song in self.settings['playlists']['Favorites']['Songs']:
             self.songs_cache[song]['heart'].configure(image=self.icons['heart'][0])
             self.settings['playlists']['Favorites']['Songs'].remove(song)
+            if song == self.song:
+                self.favorite_button.configure(image=self.icons['heart'][0])
         else:
             self.songs_cache[song]['heart'].configure(image=self.icons['heart'][1])
             self.settings['playlists']['Favorites']['Songs'].append(song)
+            if song == self.song:
+                self.favorite_button.configure(image=self.icons['heart'][1])
+
 
     def update_active_panel(self: ClassVar, song: str) -> None:
         for active_song in self.active_panels:
@@ -958,22 +967,11 @@ class Sounder(Tk):
         self.play_button.configure(image=self.icons['play_pause'][not self.paused and mixer.music.get_busy()])
 
     def update_info_panel(self: ClassVar, song: str) -> None:
-        max_length: int = int(self.song_album.master.winfo_width() / 10) + 1
+        self.favorite_button.configure(image=self.icons['heart'][song in self.settings['playlists']['Favorites']['Songs']])
         if song in self.songs_cache:
             self.song_album.configure(image=self.songs_cache[song]['album_art'])
-            if len(self.songs_cache[song]['title']) > max_length:
-                self.song_title.configure(text=f'{self.songs_cache[song]["title"][:max_length - 3]}...')
-            else:
-                self.song_title.configure(text=self.songs_cache[song]['title'])
+            self.song_title.configure(text=self.songs_cache[song]['title'])
             self.song_artist.configure(text=self.songs_cache[song]['artist'])
-            
-    def update_title_length(self: ClassVar, _: Event) -> None:
-        if self.song in self.songs_cache:
-            max_length: int = int(self.song_album.master.winfo_width() / 10) + 4
-            if len(self.songs_cache[self.song]['title']) > max_length:
-                self.song_title.configure(text=f'{self.songs_cache[self.song]["title"][:max_length - 3]}...')
-            else:
-                self.song_title.configure(text=self.songs_cache[self.song]['title'])
 
     def update_progress_info(self: ClassVar, song: str) -> None:
         minute: float = 0.0; second: float = 0.0
@@ -983,11 +981,12 @@ class Sounder(Tk):
         self.progress_bar.configure(value=0, maximum=self.songs_cache[song]['length'])
 
     def target_playlist(self: ClassVar) -> None:
-        self.playlist = self.menu_playlist.get()
-        self.songs = self.library.copy() if self.playlist == 'Library' else self.settings['playlists'][self.playlist]['Songs']
-        if self.songs and self.settings['shuffle']: shuffle(self.songs)
-        if not self.paused and not mixer.music.get_busy():
-            self.button_play()
+        if self.library:
+            self.playlist = self.menu_playlist.get()
+            self.songs = self.library.copy() if self.playlist == 'Library' else self.settings['playlists'][self.playlist]['Songs']
+            if self.songs and self.settings['shuffle']: shuffle(self.songs)
+            if not self.paused and not mixer.music.get_busy():
+                self.button_play()
 
     def init_mixer(self: ClassVar) -> None:
         try:
@@ -1055,7 +1054,7 @@ class Sounder(Tk):
             self.mixer_play(self.song)
         elif self.songs:
             self.mixer_play(self.songs[0])
-        else:
+        elif self.library:
             self.songs = self.library.copy() if self.playlist == 'Library' else self.settings['playlists'][self.playlist]['Songs']
             if self.songs and self.settings['shuffle']: shuffle(self.songs)
             self.mixer_play(self.songs[0])

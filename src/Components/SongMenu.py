@@ -127,7 +127,7 @@ class SongMenu(Toplevel):
         self.hide()
 
     def add_to_playlist(self: ClassVar, playlist: str) -> None:
-        if playlist in self.playlists and self.song in self.parent.songs and not self.song in self.playlists[playlist]['Songs']:
+        if playlist in self.playlists and self.song in self.parent.library and not self.song in self.playlists[playlist]['Songs']:
             self.playlists[playlist]['Songs'].append(self.song)
         self.hide()
 
