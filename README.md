@@ -8,6 +8,42 @@ Note: Sounder is still in development. Please keep in mind that the final appear
 
 <p align="center"><img src="images/app.png" alt="Sounder"></p>
 
+## Running app in container
+
+In docker-compose:
+
+```sh
+docker-compose up
+```
+
+In docker:
+
+```sh
+docker build . -t sounder
+docker run sounder
+```
+
+In podman:
+
+```sh
+podman build . -t sounder
+podman run sounder
+```
+
+In podman on wsl:
+
+```sh
+podman build . -t sounder --events-backend=file
+podman run sounder --events-backend=file
+```
+
+In docker for development purpose:
+
+```sh
+docker build . -t sounder-dev -f Dockerfile.dev
+docker run -it sounder-dev
+```
+
 ## Used Libraries
 
 - typing
@@ -41,7 +77,7 @@ Usability:
 - Add a check for file size when adding songs.
 - Create a new engine for managing the playback of songs.
 
-
 #
 
 <p align="center"><img src="images/horizontal.png" alt="Sounder" height="120px"></p>
+```
