@@ -1,0 +1,13 @@
+version: "3.9"
+services:
+  sounder: 
+    container_name: sounder
+    build: .
+    networks:
+      - fullstack
+    volumes:
+      - .:/home/sounder
+
+networks:
+  fullstack:
+    driver: bridge
