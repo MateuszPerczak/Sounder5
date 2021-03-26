@@ -39,7 +39,6 @@ Icons: [icons8](https://icons8.com/)
 Usability:
 
 - Add a check for file size when adding songs.
-- Create a new engine for managing the playback of songs.
 
 
 #
