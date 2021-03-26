@@ -36,7 +36,7 @@ class SongMenu(Toplevel):
             if playlist != 'Favorites':
                 self.playlist_panels[playlist]: ClassVar = ttk.Button(self.playlist_panel, image=self.icons['playlist'], text=self.playlists[playlist]['Name'], compound='left', command=lambda: self.add_to_playlist(playlist))
                 self.playlist_panels[playlist].pack(side='top', fill='x', padx=5, pady=(0, 5))
-        self.playlist_panel.pack(side='top', fill='x', expand=True)
+        self.playlist_panel.pack(side='top', fill='both')
         # delete button
         self.delete_button: ClassVar = ttk.Button(self, image=self.icons['delete'], text='Remove', compound='left', command=self.remove_from_playlist)
         self.delete_button.pack(side='top', fill='x', padx=5, pady=(5, 5))
@@ -120,6 +120,8 @@ class SongMenu(Toplevel):
             self.parent.remove_song(self.song)
         elif selected_playlist != 'Favorites' and selected_playlist in self.playlists and self.song in self.playlists[selected_playlist]['Songs']:
             self.playlists[selected_playlist]['Songs'].remove(self.song)
+            if self.song in self.parent.songs:
+                self.parent.songs.remove(self.song)
             if self.song in self.parent.song_panels:
                 self.parent.song_panels[self.song].pack_forget()
             if not self.playlists[selected_playlist]['Songs']:

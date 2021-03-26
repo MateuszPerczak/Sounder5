@@ -1,10 +1,10 @@
 try:
     from typing import ClassVar
-    from tkinter import Tk, ttk, StringVar, BooleanVar, DoubleVar, Canvas, Event, Toplevel
+    from tkinter import Tk, ttk, StringVar, BooleanVar, DoubleVar, Canvas, Event, Toplevel, IntVar
     from tkinter.filedialog import askdirectory
     from tkinter.messagebox import askyesno
     from os.path import isfile, join, isdir, basename, abspath, join, splitext, dirname, exists
-    from os import startfile, listdir, walk# getcwd, listdir, startfile, remove
+    from os import startfile, listdir, walk, getpid# getcwd, listdir, startfile, remove
     from json import load, dump
     from json.decoder import JSONDecodeError
     from logging import basicConfig, error, getLevelName, getLogger, shutdown
@@ -19,7 +19,7 @@ try:
     from Components.le import compare
     from Components.SongMenu import SongMenu
     from requests import get
-    from threading import Thread, active_count, enumerate as enum_threads
+    from threading import Thread
     from mutagen.mp3 import MP3
     from mutagen.flac import FLAC
     from mutagen.oggvorbis import OggVorbis
@@ -27,6 +27,7 @@ try:
     from pygame import mixer
     from time import sleep
     from win10toast import ToastNotifier
+    from psutil import Process
 except ImportError as err:
     exit(err)
 
@@ -43,6 +44,7 @@ class Sounder(Tk):
         self.title('Sounder')
         self.protocol('WM_DELETE_WINDOW', self.exit_app)
         self.bind('<F12>', lambda _: Debugger(self))
+        # self.attributes('-alpha', 0.8)
         # init notifications
         self.init_notifications()
         # init settings
@@ -64,6 +66,7 @@ class Sounder(Tk):
     def init_logging(self: ClassVar) -> None:
         # logging error messages
         basicConfig(filename=f'Resources\\Dumps\\dump.txt', level=40)
+        self.process: ClassVar = Process(getpid())
 
     def log(self: ClassVar, err_obj: ClassVar) -> None:
         # DING!!!!!!
@@ -84,9 +87,9 @@ class Sounder(Tk):
     def init_settings(self: ClassVar) -> None:
         try:
             # variables
-            default_settings: dict = {'shuffle': False, 'start_playback': False, 'playlist': 'Library', 'repeat': 'None', 'buffer': 'Normal', 'last_song': '', 'volume': 0.5, 'sort_by': 'A-Z', 'scan_subfolders': False, 'geometry': '800x500', 'wheel_acceleration': 1.0, 'updates': True, 'folders': [], 'use_system_theme': True, 'theme': 'Light', 'page': 'Library', 'playlists': {'Favorites': {'Name': 'Favorites', 'Songs': []}}}
+            default_settings: dict = {'crossfade': 100, 'shuffle': False, 'start_playback': False, 'playlist': 'Library', 'repeat': 'None', 'buffer': 'Normal', 'last_song': '', 'volume': 0.5, 'sort_by': 'A-Z', 'scan_subfolders': False, 'geometry': '800x500', 'wheel_acceleration': 1.0, 'updates': True, 'folders': [], 'use_system_theme': True, 'theme': 'Light', 'page': 'Library', 'playlists': {'Favorites': {'Name': 'Favorites', 'Songs': []}}}
             self.settings: dict = {}
-            self.version: tuple = ('0.6.3', '300121')
+            self.version: tuple = ('0.6.5', '260321')
             # load settings
             if isfile('Resources\\Settings\\Settings.json'):
                 with open('Resources\\Settings\\Settings.json', 'r') as data:
@@ -152,7 +155,7 @@ class Sounder(Tk):
         self.layout.layout('Vertical.TScrollbar', [('Vertical.Scrollbar.trough', {'children': [('Vertical.Scrollbar.thumb', {'expand': '1', 'sticky': 'nswe'})], 'sticky': 'ns'})])
         # entry
         self.layout.layout('TEntry', [('Entry.padding', {'sticky': 'nswe', 'children': [('Entry.textarea', {'sticky': 'nswe'})]})])
-        
+
     def apply_theme(self: ClassVar) -> None:
         theme: dict = {'Dark': ['#111', '#212121', '#333', '#fff'], 'Light': ['#eee', '#fff', '#aaa', '#000']}
         # window 
@@ -236,7 +239,11 @@ class Sounder(Tk):
             'trash': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\trash.png').resize((25, 25))),
             'select': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\select.png').resize((25, 25))),
             'power': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\power.png').resize((25, 25))),
-            'sort': (ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\no_sort.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\normal_sort.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\reversed_sort.png').resize((25, 25))))
+            'time': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\time.png').resize((25, 25))),
+            'sort': (ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\no_sort.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\normal_sort.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\reversed_sort.png').resize((25, 25)))),
+            'processor': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\processor.png').resize((25, 25))),
+            'memory': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\memory.png').resize((25, 25))),
+            'performance': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\performance.png').resize((25, 25)))
             }
         self.iconphoto(False, self.icons['logo'])
 
@@ -244,10 +251,7 @@ class Sounder(Tk):
         # ui variables
         self.menu_option: StringVar = StringVar(value=self.settings['page'])
         self.menu_playlist: StringVar = StringVar(value=self.settings['page'])
-        self.buffer: StringVar = StringVar(value=self.settings['buffer'])
         self.muted: bool = True if self.settings['volume'] == 0.0 else False
-        self.start_playback: BooleanVar = BooleanVar(value=self.settings['start_playback'])
-        self.sort_by: StringVar = StringVar(value=self.settings['sort_by'])
         self.last_panel: str = ''
         self.folder_panels: dict = {}
         self.song_panels: dict = {}
@@ -264,6 +268,14 @@ class Sounder(Tk):
         self.wheel_acceleration: DoubleVar = DoubleVar(value=self.settings['wheel_acceleration'])
         # scan subfolders
         self.scan_subfolders: BooleanVar = BooleanVar(value=self.settings['scan_subfolders'])
+        # sort by
+        self.sort_by: StringVar = StringVar(value=self.settings['sort_by'])
+        # buffer mode
+        self.buffer: StringVar = StringVar(value=self.settings['buffer'])
+        # playback
+        self.start_playback: BooleanVar = BooleanVar(value=self.settings['start_playback'])
+        # crossfade
+        self.crossfade: IntVar = IntVar(value=self.settings['crossfade'])
         # player panel
         self.player_panel: ClassVar = ttk.Frame(self)
         # top panel
@@ -375,7 +387,7 @@ class Sounder(Tk):
         settings_acceleration: ClassVar = ttk.Frame(self.player_content, style='second.TFrame')
         ttk.Label(settings_acceleration, image=self.icons['wheel'], text='Wheel acceleration', compound='left').pack(side='left', anchor='c', fill='y', pady=10, padx=10)
         ttk.Label(settings_acceleration, text='Fast').pack(side='right', anchor='c', fill='y', pady=10, padx=10)
-        ttk.Scale(settings_acceleration, variable=self.wheel_acceleration, from_=1, to=8, command=self.change_acceleration).pack(side='right', anchor='c', fill='x', ipadx=20)
+        ttk.Scale(settings_acceleration, variable=self.wheel_acceleration, from_=1, to=8, command=self.change_acceleration).pack(side='right', anchor='c', fill='x', ipadx=40)
         ttk.Label(settings_acceleration, text='Slow').pack(side='right', anchor='c', fill='y', pady=10, padx=10)
         # updates
         settings_updates: ClassVar = ttk.Frame(self.player_content, style='second.TFrame')
@@ -412,8 +424,32 @@ class Sounder(Tk):
         ttk.Label(settings_startup, image=self.icons['power'], text='On startup', compound='left').pack(side='left', anchor='c', fill='y', pady=10, padx=10)
         ttk.Radiobutton(settings_startup, text='Do nothing', style='fourth.TRadiobutton', value=False, variable=self.start_playback, command=self.change_playback).pack(side='right', anchor='c', padx=(0, 10))
         ttk.Radiobutton(settings_startup, text='Start playback', style='fourth.TRadiobutton', value=True, variable=self.start_playback, command=self.change_playback).pack(side='right', anchor='c', padx=(0, 10))
+        # crossfade
+        settings_crossfade: ClassVar = ttk.Frame(self.player_content, style='second.TFrame')
+        crossfade_panel: ClassVar = ttk.Frame(settings_crossfade, style='second.TFrame')
+        ttk.Label(crossfade_panel, image=self.icons['time'], text='Crossfade', compound='left').pack(side='left', anchor='c', fill='y')
+        ttk.Label(crossfade_panel, text='16s').pack(side='right', anchor='c', fill='y', padx=(10, 0))
+        ttk.Scale(crossfade_panel, from_=100, to=16000, variable=self.crossfade, command=self.change_crossfade).pack(side='right', anchor='c', fill='x', ipadx=40)
+        ttk.Label(crossfade_panel, text='Off').pack(side='right', anchor='c', fill='y', padx=(0, 10))
+        crossfade_panel.pack(side='top', fill='x', pady=10, padx=10)
+        ttk.Label(settings_crossfade, image=self.icons['info'], text='Note: Allows you to crossfade between songs!', compound='left').pack(side='top', fill='x', padx=10, pady=(0, 10))
+        # performance
+        settings_performance: ClassVar = ttk.Frame(self.player_content, style='second.TFrame')
+        ttk.Label(settings_performance, image=self.icons['performance'], text='Performance', compound='left').pack(side='top', anchor='c', fill='x', padx=10, pady=(10, 0))
+        # cpu usage
+        cpu_usage: ClassVar = ttk.Frame(settings_performance, style='second.TFrame')
+        ttk.Label(cpu_usage, image=self.icons['processor'], text='Cpu utilization', compound='left').pack(side='left', anchor='c', fill='y')
+        self.cpu_usage_label: ClassVar = ttk.Label(cpu_usage, text='0%')
+        self.cpu_usage_label.pack(side='right', anchor='c', fill='y')
+        cpu_usage.pack(side='top', fill='x', pady=(10, 0), padx=10)
+        # memory usage
+        memory_usage: ClassVar = ttk.Frame(settings_performance, style='second.TFrame')
+        ttk.Label(memory_usage, image=self.icons['memory'], text='Memory utilization', compound='left').pack(side='left', anchor='c', fill='y')
+        self.memory_usage_label: ClassVar = ttk.Label(memory_usage, text='0%')
+        self.memory_usage_label.pack(side='right', anchor='c', fill='y')
+        memory_usage.pack(side='top', fill='x', pady=10, padx=10)
         # panels variable
-        self.settings_panels = (settings_acceleration, settings_theme, settings_startup, settings_subfolders, settings_updates, settings_buffer, settings_about)
+        self.settings_panels = (settings_acceleration, settings_theme, settings_startup, settings_crossfade, settings_subfolders, settings_updates, settings_buffer, settings_performance, settings_about)
         # bottom panel
         player_bot_panel: ClassVar = ttk.Frame(self.player_panel, style='second.TFrame')
         # buttons, song name, etc ...
@@ -496,6 +532,7 @@ class Sounder(Tk):
         self.paused: bool = False
         self.playlist: str = self.settings['playlist']
         self.songs: list = []
+        self.after_job: ClassVar = None
         # set last song 
         self.song: str = self.settings['last_song']
         # init mixer
@@ -516,6 +553,8 @@ class Sounder(Tk):
         self.mixer_active: bool = False
         if self.settings['start_playback']:
             self.after(200, self.button_play)
+        # update utilization
+        Thread(target=self.update_utilization, daemon=True).start()
 
     def exit_app(self: ClassVar) -> None:
         self.withdraw()
@@ -788,6 +827,9 @@ class Sounder(Tk):
             elif selected_playlist in self.settings['playlists']:
                 self.sort_panels('', self.settings['playlists'][selected_playlist]['Songs'], True)
 
+    def change_crossfade(self: ClassVar, _: Event) -> None:
+        self.settings['crossfade'] = self.crossfade.get()
+
     def update_thread(self: ClassVar) -> None:
         Thread(target=self.check_update, daemon=True).start()
 
@@ -814,7 +856,7 @@ class Sounder(Tk):
         return clean_content
 
     def search(self: ClassVar, _: Event=None) -> None:
-        self.sort_panels(self.get_filtered_search(), self.library)
+        self.sort_panels(self.get_filtered_search(), self.library, True)
         self.player_canvas.yview_moveto(0)
 
     def sort_panels(self: ClassVar, search_word: str, songs: list, refresh_panels: bool = False) -> None:
@@ -823,7 +865,7 @@ class Sounder(Tk):
         if search_word:
             for song in songs:
                 result = f'{self.songs_cache[song]["title"]} {self.songs_cache[song]["artist"]} {self.songs_cache[song]["album"]} {song}'
-                if findall(search_word, result.lower()) or compare(search_word, self.songs_cache[song]['title'], 2) or compare(search_word, self.songs_cache[song]['artist'], 3) or compare(search_word, self.songs_cache[song]['album'], 3):
+                if findall(search_word, result.lower()) or compare(search_word, self.songs_cache[song]['title'], 3) or compare(search_word, self.songs_cache[song]['artist'], 3) or compare(search_word, self.songs_cache[song]['album'], 3):
                     temp_songs.append(song)
         else:
             temp_songs = songs.copy()
@@ -953,7 +995,6 @@ class Sounder(Tk):
             if song == self.song:
                 self.favorite_button.configure(image=self.icons['heart'][1])
 
-
     def update_active_panel(self: ClassVar, song: str) -> None:
         for active_song in self.active_panels:
             if active_song in self.songs_cache:
@@ -1009,6 +1050,9 @@ class Sounder(Tk):
                 self.update_active_panel(song)
                 self.update_info_panel(song)
                 self.update_play_pause()
+                if self.after_job:
+                    self.after_cancel(self.after_job)
+                    self.after_job = None
                 if not self.mixer_active:
                     self.mixer_thread()
             else:
@@ -1075,9 +1119,9 @@ class Sounder(Tk):
         self.update_active_panel('')
         self.update_play_pause()
         if self.settings['repeat'] == 'One':
-            self.after(100, self.button_play)
+            self.after_job = self.after(self.settings['crossfade'], self.button_play)
         elif self.settings['repeat'] == 'All':
-            self.after(100, self.button_next)
+            self.after_job = self.after(self.settings['crossfade'], self.button_next)
 
     def button_next(self: ClassVar) -> None:
         if self.song in self.songs:
@@ -1132,7 +1176,12 @@ class Sounder(Tk):
             self.settings['repeat'] = 'None'
             self.repeat_button.configure(style='TButton', image=self.icons['repeat'][0])
 
-
+    def update_utilization(self: ClassVar) -> None:
+        while True:
+            self.cpu_usage_label['text'] = f'{round(self.process.cpu_percent(), 1)}%'
+            self.memory_usage_label['text'] = f'{round(self.process.memory_percent(), 1)}%'
+            sleep(1)
+ 
 if __name__ == '__main__':
     Sounder().mainloop()
     

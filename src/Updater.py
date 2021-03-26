@@ -40,6 +40,7 @@ class Updater(Tk):
                 if self.get_version():
                     if self.compare_version():
                         self.update_panel.lift()
+                        self.update(False)
                     else:
                         self.reinstall_panel.lift()
             else:
@@ -92,6 +93,8 @@ class Updater(Tk):
         self.reinstall_panel.place(x=0, y=0, relwidth=1, relheight=1)
         # update panel
         self.update_panel: ClassVar = ttk.Frame(self)
+        
+
         self.update_panel.place(x=0, y=0, relwidth=1, relheight=1)
 
         # show init window
@@ -158,6 +161,7 @@ class Updater(Tk):
     def update(self: ClassVar, ignore_version: bool = False) -> None:
 
         self.update_panel.lift()
+        self.kill_sounder()
         print('update', ignore_version)
 
 
