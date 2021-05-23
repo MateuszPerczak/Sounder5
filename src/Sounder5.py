@@ -1152,7 +1152,6 @@ class Sounder(Tk):
         self.update_active_panel('')
         self.update_play_pause()
         if self.settings['repeat'] == 'One':
-            print(self.settings['crossfade'])
             self.after_job = self.after(self.settings['crossfade'], self.button_play)
         elif self.settings['repeat'] == 'All':
             self.after_job = self.after(self.settings['crossfade'], self.button_next)
