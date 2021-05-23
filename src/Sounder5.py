@@ -1,5 +1,4 @@
 try:
-    from typing import ClassVar
     from tkinter import Tk, ttk, StringVar, BooleanVar, DoubleVar, Canvas, Event, Toplevel, IntVar
     from tkinter.filedialog import askdirectory
     from tkinter.messagebox import askyesno
@@ -28,12 +27,13 @@ try:
     from time import sleep
     from win10toast import ToastNotifier
     from psutil import Process
+    from typing import Union
 except ImportError as err:
     exit(err)
 
 
 class Sounder(Tk):
-    def __init__(self: ClassVar) -> None:
+    def __init__(self) -> None:
         super().__init__()
         # init logging errors
         self.init_logging()
@@ -63,12 +63,12 @@ class Sounder(Tk):
         # show window
         self.deiconify()
 
-    def init_logging(self: ClassVar) -> None:
+    def init_logging(self) -> None:
         # logging error messages
         basicConfig(filename=f'Resources\\Dumps\\dump.txt', level=40)
-        self.process: ClassVar = Process(getpid())
+        self.process = Process(getpid())
 
-    def log(self: ClassVar, err_obj: ClassVar) -> None:
+    def log(self, err_obj) -> None:
         # DING!!!!!!
         self.bell()
         # log error to file
@@ -81,15 +81,15 @@ class Sounder(Tk):
         except Exception as _:
             pass
 
-    def init_notifications(self: ClassVar) -> None:
-        self.toaster: object = ToastNotifier()
+    def init_notifications(self) -> None:
+        self.toaster = ToastNotifier()
 
-    def init_settings(self: ClassVar) -> None:
+    def init_settings(self) -> None:
         try:
             # variables
             default_settings: dict = {'crossfade': 100, 'shuffle': False, 'start_playback': False, 'playlist': 'Library', 'repeat': 'None', 'buffer': 'Normal', 'last_song': '', 'volume': 0.5, 'sort_by': 'A-Z', 'scan_subfolders': False, 'geometry': '800x500', 'wheel_acceleration': 1.0, 'updates': True, 'folders': [], 'use_system_theme': True, 'theme': 'Light', 'page': 'Library', 'playlists': {'Favorites': {'Name': 'Favorites', 'Songs': []}}}
             self.settings: dict = {}
-            self.version: tuple = ('0.6.5', '260321')
+            self.version: tuple = ('0.6.7', '230521')
             # load settings
             if isfile('Resources\\Settings\\Settings.json'):
                 with open('Resources\\Settings\\Settings.json', 'r') as data:
@@ -109,10 +109,10 @@ class Sounder(Tk):
         except Exception as err_obj:
             self.log(err_obj)
 
-    def apply_settings(self: ClassVar) -> None:
+    def apply_settings(self) -> None:
         # check theme
         if self.settings['use_system_theme']:
-            self.settings['theme']: str = get_theme()
+            self.settings['theme'] = get_theme()
         # check for updates
         if self.settings['updates']:
             self.after(5000, self.update_thread)
@@ -123,7 +123,7 @@ class Sounder(Tk):
         # apply geometry
         self.geometry(self.settings['geometry'])
 
-    def save_settings(self: ClassVar) -> None:
+    def save_settings(self) -> None:
         # save last page
         self.settings['page'] = self.menu_option.get()
         # save player state ...
@@ -137,14 +137,14 @@ class Sounder(Tk):
         except Exception as err_obj:
             self.log(err_obj)
 
-    def restore_default(self: ClassVar) -> None:
+    def restore_default(self) -> None:
         if askyesno('Restore default configuration', 'Are you sure you want to restore the default configuration?', icon='warning'):
-            self.settings: dict = {}
+            self.settings = {}
             self.exit_app()
 
-    def init_layout(self: ClassVar) -> None:
+    def init_layout(self) -> None:
         # init theme object
-        self.layout: ClassVar = ttk.Style()
+        self.layout = ttk.Style()
         # set theme to clam
         self.layout.theme_use('clam')
         # button
@@ -156,7 +156,7 @@ class Sounder(Tk):
         # entry
         self.layout.layout('TEntry', [('Entry.padding', {'sticky': 'nswe', 'children': [('Entry.textarea', {'sticky': 'nswe'})]})])
 
-    def apply_theme(self: ClassVar) -> None:
+    def apply_theme(self) -> None:
         theme: dict = {'Dark': ['#111', '#212121', '#333', '#fff'], 'Light': ['#eee', '#fff', '#aaa', '#000']}
         # window 
         self.configure(background=theme[self.settings['theme']][1])
@@ -173,19 +173,19 @@ class Sounder(Tk):
         # radiobutton
         self.layout.configure('TRadiobutton', background=theme[self.settings['theme']][0], relief='flat', font=('catamaran 13 bold'), foreground=theme[self.settings['theme']][3], anchor='w', padding=5, width=12)
         self.layout.map('TRadiobutton', background=[('pressed', '!disabled', theme[self.settings['theme']][1]), ('active', theme[self.settings['theme']][1]), ('selected', theme[self.settings['theme']][1])])
-        self.layout.configure('second.TRadiobutton', anchor='c', padding=5, width=6)
-        self.layout.configure('third.TRadiobutton', anchor='c', padding=5, width=8)
-        self.layout.configure('fourth.TRadiobutton', anchor='c')
-        self.layout.configure('fifth.TRadiobutton', font=('catamaran 12 bold'), background=theme[self.settings['theme']][1], foreground=theme[self.settings['theme']][3], anchor='c', padding=4, width=6)
+        self.layout.configure('second.TRadiobutton', anchor='center', padding=5, width=6)
+        self.layout.configure('third.TRadiobutton', anchor='center', padding=5, width=8)
+        self.layout.configure('fourth.TRadiobutton', anchor='center')
+        self.layout.configure('fifth.TRadiobutton', font=('catamaran 12 bold'), background=theme[self.settings['theme']][1], foreground=theme[self.settings['theme']][3], anchor='center', padding=4, width=6)
         self.layout.map('fifth.TRadiobutton', background=[('pressed', '!disabled', theme[self.settings['theme']][0]), ('active', theme[self.settings['theme']][0]), ('selected', theme[self.settings['theme']][0])])
         # button
         self.layout.configure('TButton', background=theme[self.settings['theme']][0], relief='flat', font=('catamaran 13 bold'), foreground=theme[self.settings['theme']][3], anchor='w')
         self.layout.map('TButton', background=[('pressed', '!disabled', theme[self.settings['theme']][1]), ('active', theme[self.settings['theme']][1]), ('selected', theme[self.settings['theme']][1])])
-        self.layout.configure('second.TButton', background=theme[self.settings['theme']][1], anchor='c')
+        self.layout.configure('second.TButton', background=theme[self.settings['theme']][1], anchor='center')
         self.layout.map('second.TButton', background=[('pressed', '!disabled', theme[self.settings['theme']][0]), ('active', theme[self.settings['theme']][0]), ('selected', theme[self.settings['theme']][0])])
-        self.layout.configure('third.TButton', background=theme[self.settings['theme']][0], anchor='c')
+        self.layout.configure('third.TButton', background=theme[self.settings['theme']][0], anchor='center')
         self.layout.map('third.TButton', background=[('pressed', '!disabled', theme[self.settings['theme']][1]), ('active', theme[self.settings['theme']][1]), ('selected', theme[self.settings['theme']][1])])
-        self.layout.configure('fourth.TButton', anchor='c', background=theme[self.settings['theme']][1], width=20)
+        self.layout.configure('fourth.TButton', anchor='center', background=theme[self.settings['theme']][1], width=20)
         self.layout.map('fourth.TButton', background=[('pressed', '!disabled', theme[self.settings['theme']][0]), ('active', theme[self.settings['theme']][0]), ('selected', theme[self.settings['theme']][0])])
         # scrollbar
         self.layout.configure('Vertical.TScrollbar', gripcount=0, relief='flat', background=theme[self.settings['theme']][1], darkcolor=theme[self.settings['theme']][1], lightcolor=theme[self.settings['theme']][1], troughcolor=theme[self.settings['theme']][1], bordercolor=theme[self.settings['theme']][1])
@@ -201,7 +201,7 @@ class Sounder(Tk):
         # progressbar
         self.layout.configure("Horizontal.TProgressbar", background=theme[self.settings['theme']][1], lightcolor=theme[self.settings['theme']][0], darkcolor=theme[self.settings['theme']][0], bordercolor=theme[self.settings['theme']][0], troughcolor=theme[self.settings['theme']][0], thickness=2)
 
-    def load_icons(self: ClassVar) -> None:
+    def load_icons(self) -> None:
         self.icons: dict = {
             'error': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\error.png').resize((100, 100))),
             'library': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\library.png').resize((25, 25))),
@@ -236,18 +236,18 @@ class Sounder(Tk):
             'filter': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\filter.png').resize((25, 25))),
             'speaker': (ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\muted.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\low_volume.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\med_volume.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\max_volume.png').resize((25, 25)))),
             'buffer': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\buffer.png').resize((25, 25))),
-            'trash': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\trash.png').resize((25, 25))),
             'select': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\select.png').resize((25, 25))),
             'power': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\power.png').resize((25, 25))),
             'time': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\time.png').resize((25, 25))),
             'sort': (ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\no_sort.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\normal_sort.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\reversed_sort.png').resize((25, 25)))),
             'processor': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\processor.png').resize((25, 25))),
             'memory': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\memory.png').resize((25, 25))),
-            'performance': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\performance.png').resize((25, 25)))
+            'performance': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\performance.png').resize((25, 25))),
+            'puzzled': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\puzzled.png').resize((25, 25)))
             }
         self.iconphoto(False, self.icons['logo'])
 
-    def init_ui(self: ClassVar) -> None:
+    def init_ui(self) -> None:
         # ui variables
         self.menu_option: StringVar = StringVar(value=self.settings['page'])
         self.menu_playlist: StringVar = StringVar(value=self.settings['page'])
@@ -275,13 +275,13 @@ class Sounder(Tk):
         # playback
         self.start_playback: BooleanVar = BooleanVar(value=self.settings['start_playback'])
         # crossfade
-        self.crossfade: IntVar = IntVar(value=self.settings['crossfade'])
+        self.crossfade: DoubleVar = DoubleVar(value=self.settings['crossfade'])
         # player panel
-        self.player_panel: ClassVar = ttk.Frame(self)
+        self.player_panel: ttk.Frame = ttk.Frame(self)
         # top panel
-        player_top_panel: ClassVar = ttk.Frame(self.player_panel)
+        player_top_panel: ttk.Frame = ttk.Frame(self.player_panel)
         # menu panel 
-        self.menu_panel: ClassVar = ttk.Frame(player_top_panel, style='second.TFrame')
+        self.menu_panel: ttk.Frame = ttk.Frame(player_top_panel, style='second.TFrame')
         ttk.Radiobutton(self.menu_panel, image=self.icons['library'], text='Library', compound='left', value='Library', variable=self.menu_option, command=self.show_panel).pack(side='top', fill='x', padx=10, pady=(10, 0))
         ttk.Radiobutton(self.menu_panel, image=self.icons['folder'][1], text='Folders', compound='left', value='Folders', variable=self.menu_option, command=self.show_panel).pack(side='top', fill='x', padx=10, pady=10)
         ttk.Radiobutton(self.menu_panel, image=self.icons['settings'], text='Settings', compound='left', value='Settings', variable=self.menu_option, command=self.show_panel).pack(side='bottom', fill='x', padx=10, pady=(0, 10))
@@ -294,79 +294,80 @@ class Sounder(Tk):
             ttk.Radiobutton(self.menu_panel, image=self.icons['playlist'], text=self.settings['playlists'][playlist]['Name'], compound='left', value=playlist, style='menu.TRadiobutton', variable=self.menu_playlist, command=self.show_playlist).pack(side='top', fill='x', padx=10, pady=(10, 0))
         self.menu_panel.pack(side='left', fill='both')
         # player scrollbar
-        player_content_scroll: ClassVar = ttk.Scrollbar(player_top_panel, orient='vertical')
+        player_content_scroll = ttk.Scrollbar(player_top_panel, orient='vertical')
         player_content_scroll.pack(side='right', fill='y')
         # options panel
-        player_options_panel: ClassVar = ttk.Frame(player_top_panel)
+        player_options_panel: ttk.Frame = ttk.Frame(player_top_panel)
         # update options panel
-        self.update_panel: ClassVar = ttk.Frame(player_options_panel)
-        ttk.Label(self.update_panel, image=self.icons['download'], text='Update available!', style='fourth.TLabel', compound='left').pack(side='left', anchor='c', padx=(10, 0))
-        ttk.Button(self.update_panel, image=self.icons['delete'], text='Remind me later', style='second.TButton', compound='left', command=self.snooze_update).pack(side='right', anchor='c', padx=(0, 15))
-        ttk.Button(self.update_panel, image=self.icons['checkmark'], text='Update now', style='second.TButton', compound='left').pack(side='right', anchor='c', padx=(0, 5))
+        self.update_panel: ttk.Frame = ttk.Frame(player_options_panel)
+        ttk.Label(self.update_panel, image=self.icons['download'], text='Update available!', style='fourth.TLabel', compound='left').pack(side='left', anchor='center', padx=(10, 0))
+        ttk.Button(self.update_panel, image=self.icons['delete'], text='Remind me later', style='second.TButton', compound='left', command=self.snooze_update).pack(side='right', anchor='center', padx=(0, 15))
+        ttk.Button(self.update_panel, image=self.icons['checkmark'], text='Update now', style='second.TButton', compound='left').pack(side='right', anchor='center', padx=(0, 5))
         self.update_panel.place(x=0, y=0, relwidth=1, relheight=1)
         # playlist panel
-        self.playlist_panel: ClassVar = ttk.Frame(player_options_panel)
+        self.playlist_panel: ttk.Frame = ttk.Frame(player_options_panel)
         # playlist arbitrary name
-        self.playlist_an: ClassVar = ttk.Label(self.playlist_panel, image=None, text='', style='fourth.TLabel', compound='left')
-        self.playlist_an.pack(side='left', anchor='c', padx=(10, 0))
+        self.playlist_an: ttk.Label = ttk.Label(self.playlist_panel, text='', style='fourth.TLabel', compound='left')
+        
+        self.playlist_an.pack(side='left', anchor='center', padx=(10, 0))
         self.playlist_an.bind('<Double-Button-1>', lambda _: self.playlist_options.lift())
         # playlist menu button
-        ttk.Button(self.playlist_panel, image=self.icons['menu'], style='second.TButton', command=lambda: self.playlist_options.lift()).pack(side='right', anchor='c', padx=(0, 15))
-        ttk.Button(self.playlist_panel, image=self.icons['select'], style='second.TButton', command=self.target_playlist).pack(side='right', anchor='c', padx=(0, 5))
-        ttk.Button(self.playlist_panel, image=self.icons['filter'], style='second.TButton', command=lambda: self.sort_options.lift()).pack(side='right', anchor='c', padx=(0, 5))
+        ttk.Button(self.playlist_panel, image=self.icons['menu'], style='second.TButton', command=lambda: self.playlist_options.lift()).pack(side='right', anchor='center', padx=(0, 15))
+        ttk.Button(self.playlist_panel, image=self.icons['select'], style='second.TButton', command=self.target_playlist).pack(side='right', anchor='center', padx=(0, 5))
+        ttk.Button(self.playlist_panel, image=self.icons['filter'], style='second.TButton', command=lambda: self.sort_options.lift()).pack(side='right', anchor='center', padx=(0, 5))
         self.playlist_panel.place(x=0, y=0, relwidth=1, relheight=1)
         # playlist options
-        self.playlist_options: ClassVar = ttk.Frame(player_options_panel)
-        ttk.Label(self.playlist_options, image=self.icons['edit'], style='third.TLabel').pack(side='left', anchor='c', padx=(10, 1))
+        self.playlist_options: ttk.Frame = ttk.Frame(player_options_panel)
+        ttk.Label(self.playlist_options, image=self.icons['edit'], style='third.TLabel').pack(side='left', anchor='center', padx=(10, 1))
         # playlist entry
-        self.playlist_entry: ClassVar = ttk.Entry(self.playlist_options, exportselection=False, font=('catamaran 16 bold'))
-        self.playlist_entry.pack(side='left', anchor='c')
+        self.playlist_entry = ttk.Entry(self.playlist_options, exportselection=False, font=('catamaran 16 bold'))
+        self.playlist_entry.pack(side='left', anchor='center')
         self.playlist_entry.bind('<Return>', self.rename_playlist)
-        ttk.Button(self.playlist_options, image=self.icons['arrow'][0], style='second.TButton', command=lambda: self.playlist_panel.lift()).pack(side='right', anchor='c', padx=(10, 15))
-        self.playlist_remove: ClassVar = ttk.Button(self.playlist_options, text='Remove playlist', image=self.icons['delete'], compound='left', style='second.TButton', command=self.remove_playlist)
-        self.playlist_remove.pack(side='right', anchor='c', padx=(10, 0))
+        ttk.Button(self.playlist_options, image=self.icons['arrow'][0], style='second.TButton', command=lambda: self.playlist_panel.lift()).pack(side='right', anchor='center', padx=(10, 15))
+        self.playlist_remove: ttk.Button = ttk.Button(self.playlist_options, text='Remove playlist', image=self.icons['delete'], compound='left', style='second.TButton', command=self.remove_playlist)
+        self.playlist_remove.pack(side='right', anchor='center', padx=(10, 0))
         self.playlist_options.place(x=0, y=0, relwidth=1, relheight=1)
         # folder options
-        self.folder_options: ClassVar = ttk.Frame(player_options_panel)
-        ttk.Label(self.folder_options, image=self.icons['folder'][1], text='Folders', style='fourth.TLabel', compound='left').pack(side='left', anchor='c', padx=(10, 0))
-        ttk.Button(self.folder_options, image=self.icons['plus'], text='Add folder', compound='left', style='second.TButton', command=self.new_folder).pack(side='right', anchor='c', padx=(10, 15))
+        self.folder_options: ttk.Frame = ttk.Frame(player_options_panel)
+        ttk.Label(self.folder_options, image=self.icons['folder'][1], text='Folders', style='fourth.TLabel', compound='left').pack(side='left', anchor='center', padx=(10, 0))
+        ttk.Button(self.folder_options, image=self.icons['plus'], text='Add folder', compound='left', style='second.TButton', command=self.new_folder).pack(side='right', anchor='center', padx=(10, 15))
         self.folder_options.place(x=0, y=0, relwidth=1, relheight=1)
         # settings options
-        self.settings_options: ClassVar = ttk.Frame(player_options_panel)
-        ttk.Label(self.settings_options, image=self.icons['settings'], text='Settings', style='fourth.TLabel', compound='left').pack(side='left', anchor='c', padx=(10, 0))
-        ttk.Button(self.settings_options, image=self.icons['restore'], text='Restore default settings', compound='left', style='second.TButton', command=self.restore_default).pack(side='right', anchor='c', padx=(10, 15))
-        ttk.Button(self.settings_options, image=self.icons['checkmark'], text='Save changes', compound='left', style='second.TButton', command=self.save_settings).pack(side='right', anchor='c', padx=(10, 0))
+        self.settings_options: ttk.Frame = ttk.Frame(player_options_panel)
+        ttk.Label(self.settings_options, image=self.icons['settings'], text='Settings', style='fourth.TLabel', compound='left').pack(side='left', anchor='center', padx=(10, 0))
+        ttk.Button(self.settings_options, image=self.icons['restore'], text='Restore default settings', compound='left', style='second.TButton', command=self.restore_default).pack(side='right', anchor='center', padx=(10, 15))
+        ttk.Button(self.settings_options, image=self.icons['checkmark'], text='Save changes', compound='left', style='second.TButton', command=self.save_settings).pack(side='right', anchor='center', padx=(10, 0))
         self.settings_options.place(x=0, y=0, relwidth=1, relheight=1)
         # library options
-        self.library_options: ClassVar = ttk.Frame(player_options_panel)
-        ttk.Label(self.library_options, image=self.icons['library'], text='Library', style='fourth.TLabel', compound='left').pack(side='left', anchor='c', padx=(10, 0))
-        ttk.Button(self.library_options, image=self.icons['filter'], style='second.TButton', command=lambda: self.sort_options.lift()).pack(side='right', anchor='c', padx=(0, 15))
-        ttk.Button(self.library_options, image=self.icons['select'], style='second.TButton', command=self.target_playlist).pack(side='right', anchor='c', padx=(0, 5))
+        self.library_options: ttk.Frame = ttk.Frame(player_options_panel)
+        ttk.Label(self.library_options, image=self.icons['library'], text='Library', style='fourth.TLabel', compound='left').pack(side='left', anchor='center', padx=(10, 0))
+        ttk.Button(self.library_options, image=self.icons['filter'], style='second.TButton', command=lambda: self.sort_options.lift()).pack(side='right', anchor='center', padx=(0, 15))
+        ttk.Button(self.library_options, image=self.icons['select'], style='second.TButton', command=self.target_playlist).pack(side='right', anchor='center', padx=(0, 5))
         # library search bar
-        search_panel: ClassVar = ttk.Frame(self.library_options)
-        self.lib_search: ClassVar = ttk.Button(search_panel, image=self.icons['search'], style='second.TButton', command=self.open_search)
-        self.lib_search.pack(side='right', anchor='c')
-        self.lib_entry: ClassVar =ttk.Entry(search_panel, exportselection=False, font=('catamaran 15 bold'), width=12, style='second.TEntry')
+        search_panel: ttk.Frame = ttk.Frame(self.library_options)
+        self.lib_search: ttk.Button = ttk.Button(search_panel, image=self.icons['search'], style='second.TButton', command=self.open_search)
+        self.lib_search.pack(side='right', anchor='center')
+        self.lib_entry =ttk.Entry(search_panel, exportselection=False, font=('catamaran 15 bold'), width=12, style='second.TEntry')
         self.lib_entry.bind('<Return>', self.search)
-        search_panel.pack(side='right', anchor='c', padx=(0, 5))
+        search_panel.pack(side='right', anchor='center', padx=(0, 5))
         self.library_options.place(x=0, y=0, relwidth=1, relheight=1)
         # sort options
-        self.sort_options: ClassVar = ttk.Frame(player_options_panel)
-        ttk.Label(self.sort_options, image=self.icons['filter'], text='Sort by', style='fourth.TLabel', compound='left').pack(side='left', anchor='c', padx=(10, 0))
-        ttk.Button(self.sort_options, image=self.icons['arrow'][0], style='second.TButton', command=lambda: self.sort_options.lower()).pack(side='right', anchor='c', padx=(0, 15))
-        ttk.Radiobutton(self.sort_options, image=self.icons['sort'][0], text='None', compound='left', style='fifth.TRadiobutton', value='#', variable=self.sort_by, command=self.change_sort).pack(side='right', anchor='c', padx=(0, 10))
-        ttk.Radiobutton(self.sort_options, image=self.icons['sort'][2], text='Name', compound='left', style='fifth.TRadiobutton', value='Z-A', variable=self.sort_by, command=self.change_sort).pack(side='right', anchor='c', padx=(0, 5))
-        ttk.Radiobutton(self.sort_options, image=self.icons['sort'][1], text='Name', compound='left', style='fifth.TRadiobutton', value='A-Z', variable=self.sort_by, command=self.change_sort).pack(side='right', anchor='c', padx=(0, 5))
+        self.sort_options: ttk.Frame = ttk.Frame(player_options_panel)
+        ttk.Label(self.sort_options, image=self.icons['filter'], text='Sort by', style='fourth.TLabel', compound='left').pack(side='left', anchor='center', padx=(10, 0))
+        ttk.Button(self.sort_options, image=self.icons['arrow'][0], style='second.TButton', command=lambda: self.sort_options.lower()).pack(side='right', anchor='center', padx=(0, 15))
+        ttk.Radiobutton(self.sort_options, image=self.icons['sort'][0], text='None', compound='left', style='fifth.TRadiobutton', value='#', variable=self.sort_by, command=self.change_sort).pack(side='right', anchor='center', padx=(0, 10))
+        ttk.Radiobutton(self.sort_options, image=self.icons['sort'][2], text='Name', compound='left', style='fifth.TRadiobutton', value='Z-A', variable=self.sort_by, command=self.change_sort).pack(side='right', anchor='center', padx=(0, 5))
+        ttk.Radiobutton(self.sort_options, image=self.icons['sort'][1], text='Name', compound='left', style='fifth.TRadiobutton', value='A-Z', variable=self.sort_by, command=self.change_sort).pack(side='right', anchor='center', padx=(0, 5))
         self.sort_options.place(x=0, y=0, relwidth=1, relheight=1)
         player_options_panel.pack(side='top', fill='x', ipady=28.5)
         # player content
-        self.player_canvas: ClassVar = Canvas(player_top_panel, background=self['background'], bd=0, highlightthickness=0, yscrollcommand=player_content_scroll.set, takefocus=False)
+        self.player_canvas = Canvas(player_top_panel, background=self['background'], bd=0, highlightthickness=0, yscrollcommand=player_content_scroll.set, takefocus=False)
         # link scrollbar to canvas
         player_content_scroll.configure(command=self.player_canvas.yview)
         # player content
-        self.player_content: ClassVar = ttk.Frame(self.player_canvas)
+        self.player_content: ttk.Frame = ttk.Frame(self.player_canvas)
         self.player_content.bind('<Configure>', lambda _: self.player_canvas.configure(scrollregion=self.player_canvas.bbox("all")))
-        self.content_window: ClassVar = self.player_canvas.create_window((0, 0), window=self.player_content, anchor='nw')
+        self.content_window = self.player_canvas.create_window((0, 0), window=self.player_content, anchor='nw')
         self.player_canvas.bind('<Configure>', lambda _: self.player_canvas.itemconfigure(self.content_window, width=self.player_canvas.winfo_width(), height=0))
         self.player_canvas.pack(side='top', fill='both', expand=True)
         player_top_panel.pack(side='top', fill='both', expand=True)
@@ -375,156 +376,156 @@ class Sounder(Tk):
             self.add_folder(abspath(folder))
         # settings panels
         # theme
-        settings_theme: ClassVar = ttk.Frame(self.player_content, style='second.TFrame')
-        theme_panel: ClassVar = ttk.Frame(settings_theme, style='second.TFrame')
-        ttk.Label(theme_panel, image=self.icons['brush'], text='Theme', style='TLabel', compound='left').pack(side='left', anchor='c', fill='y')
-        ttk.Radiobutton(theme_panel, text='System', style='second.TRadiobutton', value='System', variable=self.theme, command=self.change_theme).pack(side='right', anchor='c')
-        ttk.Radiobutton(theme_panel, text='Light', style='second.TRadiobutton', value='Light', variable=self.theme, command=self.change_theme).pack(side='right', anchor='c', padx=(10, 10))
-        ttk.Radiobutton(theme_panel, text='Dark', style='second.TRadiobutton', value='Dark', variable=self.theme, command=self.change_theme).pack(side='right', anchor='c')
+        settings_theme: ttk.Frame = ttk.Frame(self.player_content, style='second.TFrame')
+        theme_panel: ttk.Frame = ttk.Frame(settings_theme, style='second.TFrame')
+        ttk.Label(theme_panel, image=self.icons['brush'], text='Theme', style='TLabel', compound='left').pack(side='left', anchor='center', fill='y')
+        ttk.Radiobutton(theme_panel, text='System', style='second.TRadiobutton', value='System', variable=self.theme, command=self.change_theme).pack(side='right', anchor='center')
+        ttk.Radiobutton(theme_panel, text='Light', style='second.TRadiobutton', value='Light', variable=self.theme, command=self.change_theme).pack(side='right', anchor='center', padx=(10, 10))
+        ttk.Radiobutton(theme_panel, text='Dark', style='second.TRadiobutton', value='Dark', variable=self.theme, command=self.change_theme).pack(side='right', anchor='center')
         theme_panel.pack(side='top', fill='x', pady=10, padx=10)
         ttk.Label(settings_theme, image=self.icons['info'], text='Note: You need to restart the application to see any changes!', compound='left').pack(side='top', fill='x', padx=10, pady=(0, 10))
         # acceleration
-        settings_acceleration: ClassVar = ttk.Frame(self.player_content, style='second.TFrame')
-        ttk.Label(settings_acceleration, image=self.icons['wheel'], text='Wheel acceleration', compound='left').pack(side='left', anchor='c', fill='y', pady=10, padx=10)
-        ttk.Label(settings_acceleration, text='Fast').pack(side='right', anchor='c', fill='y', pady=10, padx=10)
-        ttk.Scale(settings_acceleration, variable=self.wheel_acceleration, from_=1, to=8, command=self.change_acceleration).pack(side='right', anchor='c', fill='x', ipadx=40)
-        ttk.Label(settings_acceleration, text='Slow').pack(side='right', anchor='c', fill='y', pady=10, padx=10)
+        settings_acceleration: ttk.Frame = ttk.Frame(self.player_content, style='second.TFrame')
+        ttk.Label(settings_acceleration, image=self.icons['wheel'], text='Wheel acceleration', compound='left').pack(side='left', anchor='center', fill='y', pady=10, padx=10)
+        ttk.Label(settings_acceleration, text='Fast').pack(side='right', anchor='center', fill='y', pady=10, padx=10)
+        ttk.Scale(settings_acceleration, variable=self.wheel_acceleration, from_=1, to=8, command=self.change_acceleration).pack(side='right', anchor='center', fill='x', ipadx=40)
+        ttk.Label(settings_acceleration, text='Slow').pack(side='right', anchor='center', fill='y', pady=10, padx=10)
         # updates
-        settings_updates: ClassVar = ttk.Frame(self.player_content, style='second.TFrame')
-        ttk.Label(settings_updates, image=self.icons['download'], text='Check for updates', compound='left').pack(side='left', anchor='c', fill='y', pady=10, padx=10)
-        ttk.Radiobutton(settings_updates, text='No', style='second.TRadiobutton', value=False, variable=self.updates, command=self.change_updates).pack(side='right', anchor='c', padx=(10, 10))
-        ttk.Radiobutton(settings_updates, text='Yes', style='second.TRadiobutton', value=True, variable=self.updates, command=self.change_updates).pack(side='right', anchor='c')
+        settings_updates: ttk.Frame = ttk.Frame(self.player_content, style='second.TFrame')
+        ttk.Label(settings_updates, image=self.icons['download'], text='Check for updates', compound='left').pack(side='left', anchor='center', fill='y', pady=10, padx=10)
+        ttk.Radiobutton(settings_updates, text='No', style='second.TRadiobutton', value=False, variable=self.updates, command=self.change_updates).pack(side='right', anchor='center', padx=(10, 10))
+        ttk.Radiobutton(settings_updates, text='Yes', style='second.TRadiobutton', value=True, variable=self.updates, command=self.change_updates).pack(side='right', anchor='center')
         # about
-        settings_about: ClassVar = ttk.Frame(self.player_content, style='second.TFrame')
-        ttk.Label(settings_about, image=self.icons['logo'], text='About Sounder', compound='left').pack(side='top', anchor='c', fill='x', padx=10, pady=10)
-        ttk.Label(settings_about, image=self.icons['window'], text=f'Version: {self.version[0]} Build: {self.version[1]}', compound='left').pack(side='top', anchor='c', fill='x', padx=10, pady=(0, 10))
-        ttk.Label(settings_about, image=self.icons['user'], text='Author: Mateusz Perczak', compound='left').pack(side='top', anchor='c', fill='x', padx=10, pady=(0, 10))
-        ttk.Label(settings_about, image=self.icons['icons8'], text='Icons: Icons8', compound='left').pack(side='top', anchor='c', fill='x', padx=10, pady=(0, 10))
-        ttk.Label(settings_about, image=self.icons['code'], text='UI: LUI V2', compound='left').pack(side='top', anchor='c', fill='x', padx=10, pady=(0, 10))
+        settings_about: ttk.Frame = ttk.Frame(self.player_content, style='second.TFrame')
+        ttk.Label(settings_about, image=self.icons['logo'], text='About Sounder', compound='left').pack(side='top', anchor='center', fill='x', padx=10, pady=10)
+        ttk.Label(settings_about, image=self.icons['window'], text=f'Version: {self.version[0]} Build: {self.version[1]}', compound='left').pack(side='top', anchor='center', fill='x', padx=10, pady=(0, 10))
+        ttk.Label(settings_about, image=self.icons['user'], text='Author: Mateusz Perczak', compound='left').pack(side='top', anchor='center', fill='x', padx=10, pady=(0, 10))
+        ttk.Label(settings_about, image=self.icons['icons8'], text='Icons: Icons8', compound='left').pack(side='top', anchor='center', fill='x', padx=10, pady=(0, 10))
+        ttk.Label(settings_about, image=self.icons['code'], text='UI: LUI V2', compound='left').pack(side='top', anchor='center', fill='x', padx=10, pady=(0, 10))
         # folders
-        settings_subfolders: ClassVar = ttk.Frame(self.player_content, style='second.TFrame')
-        subfolders_panel: ClassVar = ttk.Frame(settings_subfolders, style='second.TFrame')
-        ttk.Label(subfolders_panel, image=self.icons['folder'][0], text='Scan subfolders', compound='left').pack(side='left', anchor='c', fill='y')
-        ttk.Radiobutton(subfolders_panel, text='No', style='second.TRadiobutton', value=False, variable=self.scan_subfolders, command=self.change_subfolders).pack(side='right', anchor='c', padx=(10, 0))
-        ttk.Radiobutton(subfolders_panel, text='Yes', style='second.TRadiobutton', value=True, variable=self.scan_subfolders, command=self.change_subfolders).pack(side='right', anchor='c')
+        settings_subfolders: ttk.Frame = ttk.Frame(self.player_content, style='second.TFrame')
+        subfolders_panel: ttk.Frame = ttk.Frame(settings_subfolders, style='second.TFrame')
+        ttk.Label(subfolders_panel, image=self.icons['folder'][0], text='Scan subfolders', compound='left').pack(side='left', anchor='center', fill='y')
+        ttk.Radiobutton(subfolders_panel, text='No', style='second.TRadiobutton', value=False, variable=self.scan_subfolders, command=self.change_subfolders).pack(side='right', anchor='center', padx=(10, 0))
+        ttk.Radiobutton(subfolders_panel, text='Yes', style='second.TRadiobutton', value=True, variable=self.scan_subfolders, command=self.change_subfolders).pack(side='right', anchor='center')
         subfolders_panel.pack(side='top', fill='x', pady=10, padx=10)
         ttk.Label(settings_subfolders, image=self.icons['info'], text='Note: Scanning subfolders may affect performance!', compound='left').pack(side='top', fill='x', padx=10, pady=(0, 10))
         # mixer buffer
-        settings_buffer: ClassVar = ttk.Frame(self.player_content, style='second.TFrame')
-        buffer_panel: ClassVar = ttk.Frame(settings_buffer, style='second.TFrame')
-        ttk.Label(buffer_panel, image=self.icons['buffer'], text='Player buffer mode', compound='left').pack(side='left', anchor='c', fill='y')
-        ttk.Radiobutton(buffer_panel, text='Fastest', style='third.TRadiobutton', value='Fast', variable=self.buffer, command=self.change_buffer).pack(side='right', anchor='c')
-        ttk.Radiobutton(buffer_panel, text='Default', style='third.TRadiobutton', value='Normal', variable=self.buffer, command=self.change_buffer).pack(side='right', anchor='c', padx=(10, 10))
-        ttk.Radiobutton(buffer_panel, text='Slowest', style='third.TRadiobutton', value='Slow', variable=self.buffer, command=self.change_buffer).pack(side='right', anchor='c')
+        settings_buffer: ttk.Frame = ttk.Frame(self.player_content, style='second.TFrame')
+        buffer_panel: ttk.Frame = ttk.Frame(settings_buffer, style='second.TFrame')
+        ttk.Label(buffer_panel, image=self.icons['buffer'], text='Player buffer mode', compound='left').pack(side='left', anchor='center', fill='y')
+        ttk.Radiobutton(buffer_panel, text='Fastest', style='third.TRadiobutton', value='Fast', variable=self.buffer, command=self.change_buffer).pack(side='right', anchor='center')
+        ttk.Radiobutton(buffer_panel, text='Default', style='third.TRadiobutton', value='Normal', variable=self.buffer, command=self.change_buffer).pack(side='right', anchor='center', padx=(10, 10))
+        ttk.Radiobutton(buffer_panel, text='Slowest', style='third.TRadiobutton', value='Slow', variable=self.buffer, command=self.change_buffer).pack(side='right', anchor='center')
         buffer_panel.pack(side='top', fill='x', pady=10, padx=10)
         ttk.Label(settings_buffer, image=self.icons['info'], text='Note: Setting buffet to fastest reduces lag but may increase underturns!', compound='left').pack(side='top', fill='x', padx=10, pady=(0, 10))
         ttk.Label(settings_buffer, image=self.icons['info'], text='Note: You need to restart the application to see any changes!', compound='left').pack(side='top', fill='x', padx=10, pady=(0, 10))
         # startup
-        settings_startup: ClassVar = ttk.Frame(self.player_content, style='second.TFrame')
-        ttk.Label(settings_startup, image=self.icons['power'], text='On startup', compound='left').pack(side='left', anchor='c', fill='y', pady=10, padx=10)
-        ttk.Radiobutton(settings_startup, text='Do nothing', style='fourth.TRadiobutton', value=False, variable=self.start_playback, command=self.change_playback).pack(side='right', anchor='c', padx=(0, 10))
-        ttk.Radiobutton(settings_startup, text='Start playback', style='fourth.TRadiobutton', value=True, variable=self.start_playback, command=self.change_playback).pack(side='right', anchor='c', padx=(0, 10))
+        settings_startup: ttk.Frame = ttk.Frame(self.player_content, style='second.TFrame')
+        ttk.Label(settings_startup, image=self.icons['power'], text='On startup', compound='left').pack(side='left', anchor='center', fill='y', pady=10, padx=10)
+        ttk.Radiobutton(settings_startup, text='Do nothing', style='fourth.TRadiobutton', value=False, variable=self.start_playback, command=self.change_playback).pack(side='right', anchor='center', padx=(0, 10))
+        ttk.Radiobutton(settings_startup, text='Start playback', style='fourth.TRadiobutton', value=True, variable=self.start_playback, command=self.change_playback).pack(side='right', anchor='center', padx=(0, 10))
         # crossfade
-        settings_crossfade: ClassVar = ttk.Frame(self.player_content, style='second.TFrame')
-        crossfade_panel: ClassVar = ttk.Frame(settings_crossfade, style='second.TFrame')
-        ttk.Label(crossfade_panel, image=self.icons['time'], text='Crossfade', compound='left').pack(side='left', anchor='c', fill='y')
-        ttk.Label(crossfade_panel, text='16s').pack(side='right', anchor='c', fill='y', padx=(10, 0))
-        ttk.Scale(crossfade_panel, from_=100, to=16000, variable=self.crossfade, command=self.change_crossfade).pack(side='right', anchor='c', fill='x', ipadx=40)
-        ttk.Label(crossfade_panel, text='Off').pack(side='right', anchor='c', fill='y', padx=(0, 10))
+        settings_crossfade: ttk.Frame = ttk.Frame(self.player_content, style='second.TFrame')
+        crossfade_panel: ttk.Frame = ttk.Frame(settings_crossfade, style='second.TFrame')
+        ttk.Label(crossfade_panel, image=self.icons['time'], text='Crossfade', compound='left').pack(side='left', anchor='center', fill='y')
+        ttk.Label(crossfade_panel, text='16s').pack(side='right', anchor='center', fill='y', padx=(10, 0))
+        ttk.Scale(crossfade_panel, from_=100, to=16000, variable=self.crossfade, command=self.change_crossfade).pack(side='right', anchor='center', fill='x', ipadx=40)
+        ttk.Label(crossfade_panel, text='Off').pack(side='right', anchor='center', fill='y', padx=(0, 10))
         crossfade_panel.pack(side='top', fill='x', pady=10, padx=10)
         ttk.Label(settings_crossfade, image=self.icons['info'], text='Note: Allows you to crossfade between songs!', compound='left').pack(side='top', fill='x', padx=10, pady=(0, 10))
         # performance
-        settings_performance: ClassVar = ttk.Frame(self.player_content, style='second.TFrame')
-        ttk.Label(settings_performance, image=self.icons['performance'], text='Performance', compound='left').pack(side='top', anchor='c', fill='x', padx=10, pady=(10, 0))
+        settings_performance: ttk.Frame = ttk.Frame(self.player_content, style='second.TFrame')
+        ttk.Label(settings_performance, image=self.icons['performance'], text='Performance', compound='left').pack(side='top', anchor='center', fill='x', padx=10, pady=(10, 0))
         # cpu usage
-        cpu_usage: ClassVar = ttk.Frame(settings_performance, style='second.TFrame')
-        ttk.Label(cpu_usage, image=self.icons['processor'], text='Cpu utilization', compound='left').pack(side='left', anchor='c', fill='y')
-        self.cpu_usage_label: ClassVar = ttk.Label(cpu_usage, text='0%')
-        self.cpu_usage_label.pack(side='right', anchor='c', fill='y')
+        cpu_usage: ttk.Frame = ttk.Frame(settings_performance, style='second.TFrame')
+        ttk.Label(cpu_usage, image=self.icons['processor'], text='Cpu utilization', compound='left').pack(side='left', anchor='center', fill='y')
+        self.cpu_usage_label: ttk.Label = ttk.Label(cpu_usage, text='0%')
+        self.cpu_usage_label.pack(side='right', anchor='center', fill='y')
         cpu_usage.pack(side='top', fill='x', pady=(10, 0), padx=10)
         # memory usage
-        memory_usage: ClassVar = ttk.Frame(settings_performance, style='second.TFrame')
-        ttk.Label(memory_usage, image=self.icons['memory'], text='Memory utilization', compound='left').pack(side='left', anchor='c', fill='y')
-        self.memory_usage_label: ClassVar = ttk.Label(memory_usage, text='0%')
-        self.memory_usage_label.pack(side='right', anchor='c', fill='y')
+        memory_usage: ttk.Frame = ttk.Frame(settings_performance, style='second.TFrame')
+        ttk.Label(memory_usage, image=self.icons['memory'], text='Memory utilization', compound='left').pack(side='left', anchor='center', fill='y')
+        self.memory_usage_label: ttk.Label = ttk.Label(memory_usage, text='0%')
+        self.memory_usage_label.pack(side='right', anchor='center', fill='y')
         memory_usage.pack(side='top', fill='x', pady=10, padx=10)
         # panels variable
         self.settings_panels = (settings_acceleration, settings_theme, settings_startup, settings_crossfade, settings_subfolders, settings_updates, settings_buffer, settings_performance, settings_about)
         # bottom panel
-        player_bot_panel: ClassVar = ttk.Frame(self.player_panel, style='second.TFrame')
+        player_bot_panel: ttk.Frame = ttk.Frame(self.player_panel, style='second.TFrame')
         # buttons, song name, etc ...
-        center_panel: ClassVar = ttk.Frame(player_bot_panel, style='second.TFrame')
-        self.play_button: ClassVar = ttk.Button(center_panel, image=self.icons['play_pause'][0], takefocus=False, command=self.button_play)
+        center_panel: ttk.Frame = ttk.Frame(player_bot_panel, style='second.TFrame')
+        self.play_button: ttk.Button = ttk.Button(center_panel, image=self.icons['play_pause'][0], takefocus=False, command=self.button_play)
         self.play_button.place(relx=0.5, rely=0.5, anchor='center')
         # next button
         ttk.Button(center_panel, image=self.icons['next'], takefocus=False, command=self.button_next).place(relx=0.65, rely=0.5, anchor='center')
         # previous button
         ttk.Button(center_panel, image=self.icons['previous'], takefocus=False, command=self.button_previous).place(relx=0.35, rely=0.5, anchor='center')
         # shuffle button
-        self.shuffle_button: ClassVar = ttk.Button(center_panel, image=self.icons['shuffle'], takefocus=False, command=self.toggle_shuffle)
+        self.shuffle_button: ttk.Button = ttk.Button(center_panel, image=self.icons['shuffle'], takefocus=False, command=self.toggle_shuffle)
         self.shuffle_button.place(relx=0.15, rely=0.5, anchor='center')
         if self.settings['shuffle']: self.shuffle_button.configure(style='second.TButton')
         else: self.shuffle_button.configure(style='TButton')
         # repeat button
-        self.repeat_button: ClassVar = ttk.Button(center_panel, takefocus=False, command=self.toggle_repeat)
+        self.repeat_button: ttk.Button = ttk.Button(center_panel, takefocus=False, command=self.toggle_repeat)
         if self.settings['repeat'] == 'None': self.repeat_button.configure(image=self.icons['repeat'][0])
         elif self.settings['repeat'] == 'All': self.repeat_button.configure(image=self.icons['repeat'][0], style='second.TButton')
         else: self.repeat_button.configure(image=self.icons['repeat'][1], style='second.TButton')
         self.repeat_button.place(relx=0.85, rely=0.5, anchor='center')
         center_panel.place(relx=0.5, y=10, width=350, height=48, anchor='n')
-        volume_panel: ClassVar = ttk.Frame(player_bot_panel, style='second.TFrame')
+        volume_panel: ttk.Frame = ttk.Frame(player_bot_panel, style='second.TFrame')
         # mute button
-        self.mute_button: ClassVar = ttk.Button(volume_panel, image=self.icons['speaker'][0], takefocus=False, command=self.toggle_volume)
+        self.mute_button: ttk.Button = ttk.Button(volume_panel, image=self.icons['speaker'][0], takefocus=False, command=self.toggle_volume)
         self.mute_button.pack(side='left', anchor='center', padx=5)
         # volume bar
-        self.volume_bar: ClassVar = ttk.Scale(volume_panel, orient='horizontal', from_=0, to=1, command=self.set_volume)
+        self.volume_bar: ttk.Scale = ttk.Scale(volume_panel, orient='horizontal', from_=0, to=1, command=self.set_volume)
         self.volume_bar.pack(side='left', anchor='center', padx=5, fill='x', expand=True)
         volume_panel.place(relx=1, y=10, relwidth=0.22, height=48, anchor='ne')
         player_bot_panel.pack(side='top', fill='x', ipady=45)
         self.player_panel.place(x=0, y=0, relwidth=1, relheight=1)
         # left frame
-        info_panel: ClassVar = ttk.Frame(player_bot_panel, style='second.TFrame')
-        self.song_album: ClassVar = ttk.Label(info_panel)
-        self.song_album.pack(side='left', padx=10, anchor='c')
-        self.favorite_button: ClassVar = ttk.Button(info_panel, image=self.icons['heart'][0],  command=lambda: self.favorites_song(self.song))
-        self.favorite_button.pack(side='right', padx=(5, 0), anchor='c')
-        info_frame: ClassVar = ttk.Frame(info_panel, style='second.TFrame')
-        self.song_title: ClassVar = ttk.Label(info_frame, text='', style='fifth.TLabel')
+        info_panel: ttk.Frame = ttk.Frame(player_bot_panel, style='second.TFrame')
+        self.song_album: ttk.Label = ttk.Label(info_panel)
+        self.song_album.pack(side='left', padx=10, anchor='center')
+        self.favorite_button: ttk.Button = ttk.Button(info_panel, image=self.icons['heart'][0],  command=lambda: self.favorites_song(self.song))
+        self.favorite_button.pack(side='right', padx=(5, 0), anchor='center')
+        info_frame: ttk.Frame = ttk.Frame(info_panel, style='second.TFrame')
+        self.song_title: ttk.Label = ttk.Label(info_frame, text='', style='fifth.TLabel')
         self.song_title.place(x=0, y=4)
-        self.song_artist: ClassVar = ttk.Label(info_frame, text='', style='sixth.TLabel')
+        self.song_artist: ttk.Label = ttk.Label(info_frame, text='', style='sixth.TLabel')
         self.song_artist.place(x=0, y=24)
         info_frame.pack(side='left', fill='both', expand=True)
         info_panel.place(relx=0, y=10, relwidth=0.22, height=48, anchor='nw')
         # bottom frame
-        progress_frame: ClassVar = ttk.Frame(player_bot_panel, style='second.TFrame')
+        progress_frame: ttk.Frame = ttk.Frame(player_bot_panel, style='second.TFrame')
         # time passed
-        self.time_passed: ClassVar = ttk.Label(progress_frame, text='--:--', anchor='center', justify='center', style='sixth.TLabel')
+        self.time_passed: ttk.Label = ttk.Label(progress_frame, text='--:--', anchor='center', justify='center', style='sixth.TLabel')
         self.time_passed.pack(side='left', ipadx=10)
         # progress bar
-        self.progress_bar: ClassVar = ttk.Progressbar(progress_frame, orient='horizontal', mode='determinate')
+        self.progress_bar = ttk.Progressbar(progress_frame, orient='horizontal', mode='determinate')
         self.progress_bar.pack(side='left', fill='x', expand=True)
         # song length
-        self.song_length: ClassVar = ttk.Label(progress_frame, text='--:--', anchor='center', justify='center', style='sixth.TLabel')
+        self.song_length: ttk.Label = ttk.Label(progress_frame, text='--:--', anchor='center', justify='center', style='sixth.TLabel')
         self.song_length.pack(side='right', ipadx=10)
         progress_frame.place(relx=0.5, y=68, relwidth=1, height=20, anchor='n')
         # error panel
-        self.error_panel: ClassVar = ttk.Frame(self)
-        error_content: ClassVar = ttk.Frame(self.error_panel)
+        self.error_panel: ttk.Frame = ttk.Frame(self)
+        error_content: ttk.Frame = ttk.Frame(self.error_panel)
         ttk.Label(error_content, image=self.icons['error'], text='Something went wrong', compound='top', style='second.TLabel').pack(side='top')
-        self.error_label: ClassVar = ttk.Label(error_content, text='We are unable to display the error message!', style='third.TLabel')
+        self.error_label: ttk.Label = ttk.Label(error_content, text='We are unable to display the error message!', style='third.TLabel')
         self.error_label.pack(side='top')
         ttk.Button(error_content, text='OK', style='third.TButton', command=self.exit_app).pack(side='top', pady=(50, 0), padx=10)
         ttk.Button(error_content, text='Open Logs', style='third.TButton', command=self.open_logs).pack(side='top', pady=(10, 0), padx=10)
-        error_content.place(relx=.5, rely=.5, anchor='c')
+        error_content.place(relx=.5, rely=.5, anchor='center')
         ttk.Label(self.error_panel, text=f'version: {self.version[0]} [build: {self.version[1]}]', style='third.TLabel').pack(side='bottom', anchor='w', padx=10, pady=5)
         self.error_panel.place(x=0, y=0, relwidth=1, relheight=1)
         # show main panel
         self.player_panel.lift()
         # info panels
-        self.search_panel: ClassVar = ttk.Frame(self.player_content, style='second.TFrame')
-        ttk.Label(self.search_panel, image=self.icons['info'], text='No songs found!', compound='left').pack(side='left', anchor='c', fill='y', pady=10, padx=10)
+        self.search_panel: ttk.Frame = ttk.Frame(self.player_content, style='second.TFrame')
+        ttk.Label(self.search_panel, image=self.icons['info'], text='No songs found!', compound='left').pack(side='left', anchor='center', fill='y', pady=10, padx=10)
 
-    def init_player(self: ClassVar) -> None:
+    def init_player(self) -> None:
         # variables
         self.library: list = []
         self.songs_cache: dict = {}
@@ -532,7 +533,7 @@ class Sounder(Tk):
         self.paused: bool = False
         self.playlist: str = self.settings['playlist']
         self.songs: list = []
-        self.after_job: ClassVar = None
+        self.after_job: Union[str, None] = None
         # set last song 
         self.song: str = self.settings['last_song']
         # init mixer
@@ -548,7 +549,7 @@ class Sounder(Tk):
         # restore volume
         self.volume_bar.set(self.settings['volume'])
         # song menu
-        self.song_menu: ClassVar = SongMenu(self)
+        self.song_menu = SongMenu(self)
         # mixer thread
         self.mixer_active: bool = False
         if self.settings['start_playback']:
@@ -556,12 +557,12 @@ class Sounder(Tk):
         # update utilization
         Thread(target=self.update_utilization, daemon=True).start()
 
-    def exit_app(self: ClassVar) -> None:
+    def exit_app(self) -> None:
         self.withdraw()
         self.save_settings()
         self.destroy()
 
-    def show_panel(self: ClassVar) -> None:
+    def show_panel(self) -> None:
         target_panel: str = self.menu_option.get()
         self.menu_playlist.set(target_panel)
         if target_panel == 'Library':
@@ -572,7 +573,7 @@ class Sounder(Tk):
             self.settings_options.lift()
         self.show_panels(target_panel)
 
-    def show_panels(self: ClassVar, panel: str) -> None:
+    def show_panels(self, panel: str) -> None:
         if self.last_panel != panel:
             # move content to the top
             self.player_canvas.yview_moveto(0)
@@ -606,13 +607,13 @@ class Sounder(Tk):
                 self.sort_panels('', self.settings['playlists'][panel]['Songs'])
         self.last_panel = panel
 
-    def open_logs(self: ClassVar) -> None:
+    def open_logs(self) -> None:
         if isfile('Resources\\Dumps\\dump.txt'): startfile('Resources\\Dumps\\dump.txt')
 
-    def on_wheel(self: ClassVar, event: Event) -> None:
+    def on_wheel(self, event: Event) -> None:
         self.player_canvas.yview_scroll(int(-self.settings['wheel_acceleration']*(event.delta/120)), 'units')
 
-    def show_playlist(self: ClassVar) -> None:
+    def show_playlist(self) -> None:
         try:
             selected_playlist: str = self.menu_playlist.get()
             self.menu_option.set(selected_playlist)
@@ -624,7 +625,7 @@ class Sounder(Tk):
         except Exception as err_obj:
             self.log(err_obj)
 
-    def update_playlist(self: ClassVar, selected_playlist: str) -> None:
+    def update_playlist(self, selected_playlist: str) -> None:
         if selected_playlist in self.settings['playlists']:
             # update playlist info
             self.playlist_an['text'] = self.settings['playlists'][selected_playlist]['Name']
@@ -646,10 +647,10 @@ class Sounder(Tk):
                 # enable button
                 self.playlist_remove.state(['!disabled'])
 
-    def add_playlist(self: ClassVar) -> None:
+    def add_playlist(self) -> None:
         playlist_id: str = ''.join(choices(ascii_uppercase + digits, k=4))
         if not playlist_id in self.settings['playlists']:
-            self.settings['playlists'][playlist_id]: dict = {'Name': f'Playlist {len(self.settings["playlists"])}', 'Songs': []}
+            self.settings['playlists'][playlist_id] = {'Name': f'Playlist {len(self.settings["playlists"])}', 'Songs': []}
             ttk.Radiobutton(self.menu_panel, image=self.icons['playlist'], text=self.settings['playlists'][playlist_id]['Name'], compound='left', value=playlist_id, variable=self.menu_playlist, command=self.show_playlist).pack(side='top', fill='x', padx=10, pady=(10, 0))
             self.song_menu.append(playlist_id)
         
@@ -673,12 +674,13 @@ class Sounder(Tk):
         except Exception as err_obj:
             self.log(err_obj)
 
-    def get_playlist_button(self: ClassVar, playlist: str) -> ClassVar:
+    def get_playlist_button(self, playlist: str) -> Union[ttk.Radiobutton, None]:
         for widget in self.menu_panel.winfo_children():
             if widget.winfo_class() == 'TRadiobutton' and widget['text'] == self.settings['playlists'][playlist]['Name']:
                 return widget
+        return None
 
-    def rename_playlist(self: ClassVar, _) -> None:
+    def rename_playlist(self, _) -> None:
         try:
             selected_playlist: str = self.menu_playlist.get()
             new_name: str = self.playlist_entry.get()
@@ -693,16 +695,28 @@ class Sounder(Tk):
         except Exception as err_obj:
             self.log(err_obj)
 
-    def verify_playlist(self: ClassVar) -> None:
+    def verify_playlist(self) -> None:
         try:
             for playlist in self.settings['playlists']:
                 for song in self.settings['playlists'][playlist]['Songs']:
                     if not song in self.library:
-                        self.settings['playlists'][playlist]['Songs'].remove(song)
+                        self.add_missing_song(song, playlist)
         except Exception as err_obj:
             self.log(err_obj)
 
-    def new_folder(self: ClassVar) -> None:
+    def add_missing_song(self, song: str, playlist: str) -> None:
+        try:
+            self.song_panels[song] = ttk.Frame(self.player_content, style='second.TFrame')
+            ttk.Label(self.song_panels[song], image=self.icons['puzzled']).pack(side='left', anchor='center', pady=10, padx=10)
+            info_frame: ttk.Frame = ttk.Frame(self.song_panels[song], style='second.TFrame')
+            ttk.Label(info_frame, text=basename(song), style='fifth.TLabel').place(x=5, y=5)
+            ttk.Label(info_frame, text='Missing', style='sixth.TLabel').place(x=5, y=28)
+            info_frame.pack(side='left', fill='both', expand=True)
+            ttk.Button(self.song_panels[song], image=self.icons['delete'], command=lambda: self.remove_song(song)).pack(side='right', anchor='center', fill='y', pady=10, padx=(0, 5))
+        except Exception as err_obj:
+            self.log(err_obj)
+
+    def new_folder(self) -> None:
         new_dir: str = askdirectory()
         if new_dir and new_dir not in self.settings['folders']:
             new_dir = abspath(new_dir)
@@ -711,27 +725,34 @@ class Sounder(Tk):
             self.folder_panels[new_dir].pack(side='top', fill='both', expand=True, pady=5, padx=10)
             Thread(target=self.scan_folders, daemon=True).start()
 
-    def add_folder(self: ClassVar, path: str) -> None:
+    def add_folder(self, path: str) -> None:
         try:
-            self.folder_panels[path]: ClassVar = ttk.Frame(self.player_content, style='second.TFrame')
-            path_label: ClassVar = ttk.Label(self.folder_panels[path], image=self.icons['folder'][0], text=basename(path), compound='left')
-            path_label.pack(side='left', anchor='c', fill='y', pady=10, padx=10)
-            ttk.Button(self.folder_panels[path], image=self.icons['delete'], takefocus=False, command=lambda: self.remove_folder(path)).pack(side='right', padx=10, anchor='c')
+            self.folder_panels[path] = ttk.Frame(self.player_content, style='second.TFrame')
+            path_label: ttk.Label = ttk.Label(self.folder_panels[path], image=self.icons['folder'][0], text=basename(path), compound='left')
+            path_label.pack(side='left', anchor='center', fill='y', pady=10, padx=10)
+            ttk.Button(self.folder_panels[path], image=self.icons['delete'], takefocus=False, command=lambda: self.remove_folder(path)).pack(side='right', padx=10, anchor='center')
             self.folder_panels[path].bind('<Leave>', lambda _:path_label.configure(text=basename(path)))
             self.folder_panels[path].bind('<Enter>', lambda _:path_label.configure(text=path))
         except Exception as err_obj:
             self.log(err_obj)
 
-    def remove_folder(self: ClassVar, path: str) -> None:
+    def remove_folder(self, path: str) -> None:
         if askyesno('Remove folder', 'Are you sure you want to remove this folder?', icon='warning') and path in self.settings['folders']:
             self.folder_panels[path].destroy()
             self.settings['folders'].remove(path)
             self.remove_songs(path)
             del self.folder_panels[path]
 
-    def remove_songs(self: ClassVar, path: str) -> None:
+    def remove_songs(self, path: str) -> None:
         path = abspath(path)
         temp_songs: list = self.library.copy()
+        if self.song in temp_songs:
+            self.song = ''
+            self.refresh_ui()
+            if mixer.music.get_busy():
+                mixer.music.stop()
+                mixer.music.unload()
+
         if self.settings['scan_subfolders']:
             # get subdirectories
             folders: list = [path, ]
@@ -745,8 +766,14 @@ class Sounder(Tk):
             for song in temp_songs:
                 if path == dirname(song):
                     self.remove_song(song)
+        
+    def refresh_ui(self) -> None:
+        self.update_info_panel('')
+        self.time_passed['text'] = '0:00'
+        self.song_length['text'] = '0:00'
+        self.progress_bar.configure(value=0, maximum=100)
 
-    def scan_folders(self: ClassVar) -> None:
+    def scan_folders(self) -> None:
         try:
             if self.settings['scan_subfolders']:
                 folders: list = self.settings['folders'].copy()
@@ -772,7 +799,7 @@ class Sounder(Tk):
         except Exception as err_obj:
             self.log(err_obj)
 
-    def change_theme(self: ClassVar) -> None:
+    def change_theme(self) -> None:
         try:
             theme: str = self.theme.get()
             if theme == 'System':
@@ -783,20 +810,20 @@ class Sounder(Tk):
         except Exception as err_obj:
             self.log(err_obj)
 
-    def change_updates(self: ClassVar) -> None:
+    def change_updates(self) -> None:
             self.settings['updates'] = self.updates.get()
 
-    def change_acceleration(self: ClassVar, _: Event) -> None:
+    def change_acceleration(self, _: Event) -> None:
         self.settings['wheel_acceleration'] = round(self.wheel_acceleration.get(), 0)
 
-    def change_subfolders(self: ClassVar) -> None:
+    def change_subfolders(self) -> None:
         self.settings['scan_subfolders'] = self.scan_subfolders.get()
         Thread(target=self.scan_folders, daemon=True).start()
 
-    def change_buffer(self: ClassVar) -> None:
+    def change_buffer(self) -> None:
         self.settings['buffer'] = self.buffer.get()
 
-    def check_update(self: ClassVar) -> None:
+    def check_update(self) -> None:
         try:
             server_version: str = get('https://raw.githubusercontent.com/losek1/Sounder5/master/updates/version.txt').text
             if server_version != self.version[0] and int(server_version.replace('.', '')) > int(self.version[0].replace('.', '')):
@@ -805,19 +832,19 @@ class Sounder(Tk):
         except Exception as err_obj:
             self.log(err_obj)
 
-    def do_update(self: ClassVar) -> None:
+    def do_update(self) -> None:
         if isfile('Updater.exe'):
             startfile(f'Updater.exe {self.version[0]}')
             self.exit_app()
 
-    def snooze_update(self: ClassVar) -> None:
+    def snooze_update(self) -> None:
         self.update_panel.lower()
         self.after(300000, lambda: self.update_panel.lift())
 
-    def change_playback(self: ClassVar) -> None:
+    def change_playback(self) -> None:
         self.settings['start_playback'] = self.start_playback.get()
 
-    def change_sort(self: ClassVar) -> None:
+    def change_sort(self) -> None:
         sort_by: str = self.sort_by.get()
         if sort_by != self.settings['sort_by']:
             self.settings['sort_by'] = sort_by
@@ -827,13 +854,13 @@ class Sounder(Tk):
             elif selected_playlist in self.settings['playlists']:
                 self.sort_panels('', self.settings['playlists'][selected_playlist]['Songs'], True)
 
-    def change_crossfade(self: ClassVar, _: Event) -> None:
+    def change_crossfade(self, _: Event) -> None:
         self.settings['crossfade'] = self.crossfade.get()
 
-    def update_thread(self: ClassVar) -> None:
+    def update_thread(self) -> None:
         Thread(target=self.check_update, daemon=True).start()
 
-    def open_search(self: ClassVar) -> None:
+    def open_search(self) -> None:
         entry_content: str = self.lib_entry.get()
         if entry_content:
             self.search()
@@ -843,11 +870,11 @@ class Sounder(Tk):
                 self.lib_search.config(style='second.TButton')
                 self.focus_set()
             else:
-                self.lib_entry.pack(side='right', anchor='c')
+                self.lib_entry.pack(side='right', anchor='center')
                 self.lib_search.config(style='third.TButton')
                 self.lib_entry.focus_set()
 
-    def get_filtered_search(self: ClassVar) -> str:
+    def get_filtered_search(self) -> str:
         allowed_chars: str = 'abcdefghijklmnopqrstuvwxyz123456789. '
         entry_content: str = self.lib_entry.get().lower()
         clean_content: str = ''
@@ -855,11 +882,11 @@ class Sounder(Tk):
             if letter in allowed_chars: clean_content += letter
         return clean_content
 
-    def search(self: ClassVar, _: Event=None) -> None:
+    def search(self, _: Event=None) -> None:
         self.sort_panels(self.get_filtered_search(), self.library, True)
         self.player_canvas.yview_moveto(0)
 
-    def sort_panels(self: ClassVar, search_word: str, songs: list, refresh_panels: bool = False) -> None:
+    def sort_panels(self, search_word: str, songs: list, refresh_panels: bool = False) -> None:
         temp_songs: list = []
         # apply search
         if search_word:
@@ -893,16 +920,16 @@ class Sounder(Tk):
                     self.song_panels[song].pack_forget()
         # pack panels
         for song in temp_songs:
-            if song in self.library and song in self.song_panels and not self.song_panels[song].winfo_ismapped():
+            if song in self.song_panels and not self.song_panels[song].winfo_ismapped():
                 self.song_panels[song].pack(side='top', fill='x', pady=5, padx=10)
 
-    def sort_songs(self: ClassVar, song: str) -> str:
+    def sort_songs(self, song: str) -> str:
         if song in self.songs_cache:
             return self.songs_cache[song]['title'][:2].lower()
         else:
             return ''
 
-    def toggle_shuffle(self: ClassVar) -> None:
+    def toggle_shuffle(self) -> None:
         if self.settings['shuffle']:
             # change button style
             self.shuffle_button.configure(style='TButton')
@@ -918,14 +945,14 @@ class Sounder(Tk):
             if self.songs:
                 shuffle(self.songs)
 
-    def cache_song(self: ClassVar, song: str) -> None:
-        album_art: ClassVar = self.icons['note']
+    def cache_song(self, song: str) -> None:
+        album_art = self.icons['note']
         song_title: str = splitext(basename(song))[0]
         song_artist: str = 'Unknown'
         album: str = 'Unknown'
-        song_metadata: ClassVar = None
+        song_metadata = None
         if song.endswith('.mp3'):
-            song_metadata: ClassVar = MP3(song)
+            song_metadata = MP3(song)
             if 'TIT2' in song_metadata:
                 song_title = f'{song_metadata["TIT2"]}'
             if 'TPE1' in song_metadata:
@@ -935,7 +962,7 @@ class Sounder(Tk):
             if 'APIC:' in song_metadata:
                 album_art = ImageTk.PhotoImage(Image.open(BytesIO(song_metadata.get('APIC:').data)).resize((25, 25)))
         elif song.endswith('.flac'):
-            song_metadata: ClassVar = FLAC(song)
+            song_metadata = FLAC(song)
             if 'title' in song_metadata:
                 song_title = song_title.join(song_metadata['title'])
             if 'artist' in song_metadata:
@@ -945,57 +972,61 @@ class Sounder(Tk):
             if song_metadata.pictures:
                 album_art = ImageTk.PhotoImage(Image.open(BytesIO(song_metadata.pictures[0].data)).resize((25, 25)))
         elif song.endswith('.ogg'):
-            song_metadata: ClassVar = OggVorbis(song)
+            song_metadata = OggVorbis(song)
             if 'title' in song_metadata:
                 song_title = song_title.join(song_metadata['title'])
             if 'comment' in song_metadata:
                 song_artist = song_artist.join(song_metadata['comment'])
         # cache data
-        self.songs_cache[song]: dict =  {'title': song_title, 'artist': song_artist, 'album': album, 'album_art': album_art, 'length': song_metadata.info.length}
+        self.songs_cache[song] =  {'title': song_title, 'artist': song_artist, 'album': album, 'album_art': album_art, 'length': song_metadata.info.length}
 
-    def new_song(self: ClassVar, song: str) -> None:
+    def new_song(self, song: str) -> None:
         self.cache_song(song)
         self.add_song(song)
 
-    def add_song(self: ClassVar, song: str) -> None:
+    def add_song(self, song: str) -> None:
         try:
-            self.song_panels[song]: ClassVar = ttk.Frame(self.player_content, style='second.TFrame')
-            ttk.Label(self.song_panels[song], image=self.songs_cache[song]['album_art']).pack(side='left', anchor='c', pady=10, padx=10)
-            info_frame: ClassVar = ttk.Frame(self.song_panels[song], style='second.TFrame')
+            self.song_panels[song] = ttk.Frame(self.player_content, style='second.TFrame')
+            ttk.Label(self.song_panels[song], image=self.songs_cache[song]['album_art']).pack(side='left', anchor='center', pady=10, padx=10)
+            info_frame: ttk.Frame = ttk.Frame(self.song_panels[song], style='second.TFrame')
             ttk.Label(info_frame, text=f'{self.songs_cache[song]["title"]}', style='fifth.TLabel').place(x=5, y=5)
             ttk.Label(info_frame, text=f'{self.songs_cache[song]["artist"]}', style='sixth.TLabel').place(x=5, y=28)
             info_frame.pack(side='left', fill='both', expand=True)
-            ttk.Button(self.song_panels[song], image=self.icons['menu'], command=lambda: self.song_menu.show(song)).pack(side='right', anchor='c', fill='y', pady=10, padx=(0, 5))
-            self.songs_cache[song]['play_pause']: ClassVar = ttk.Button(self.song_panels[song], image=self.icons['play_pause'][0], command=lambda: self.panel_play(song))
-            self.songs_cache[song]['play_pause'].pack(side='right', anchor='c', fill='y', pady=10, padx=(0, 5))
-            self.songs_cache[song]['heart']: ClassVar = ttk.Button(self.song_panels[song], image=self.icons['heart'][song in self.settings['playlists']['Favorites']['Songs']], command=lambda: self.favorites_song(song))
-            self.songs_cache[song]['heart'].pack(side='right', anchor='c', fill='y', pady=10, padx=5)
+            ttk.Button(self.song_panels[song], image=self.icons['menu'], command=lambda: self.song_menu.show(song)).pack(side='right', anchor='center', fill='y', pady=10, padx=(0, 5))
+            self.songs_cache[song]['play_pause'] = ttk.Button(self.song_panels[song], image=self.icons['play_pause'][0], command=lambda: self.panel_play(song))
+            self.songs_cache[song]['play_pause'].pack(side='right', anchor='center', fill='y', pady=10, padx=(0, 5))
+            self.songs_cache[song]['heart'] = ttk.Button(self.song_panels[song], image=self.icons['heart'][song in self.settings['playlists']['Favorites']['Songs']], command=lambda: self.favorites_song(song))
+            self.songs_cache[song]['heart'].pack(side='right', anchor='center', fill='y', pady=10, padx=5)
         except Exception as err_obj:
             self.log(err_obj)
 
-    def remove_song(self: ClassVar, song: str) -> None:
+    def remove_song(self, song: str) -> None:
         try:
-            if song in self.song_panels and song in self.library:
+            if song in self.song_panels:
                 self.song_panels[song].destroy()
-                del self.song_panels[song], self.songs_cache[song]
+                del self.song_panels[song]
+            if song in self.songs_cache:
+                self.songs_cache[song]
+            if song in self.library:
                 self.library.remove(song)
-                if song in self.songs: self.songs.remove(song)
+            if song in self.songs: self.songs.remove(song)
         except Exception as err_obj:
             self.log(err_obj)
 
-    def favorites_song(self: ClassVar, song: str) -> None:
-        if song in self.settings['playlists']['Favorites']['Songs']:
-            self.songs_cache[song]['heart'].configure(image=self.icons['heart'][0])
-            self.settings['playlists']['Favorites']['Songs'].remove(song)
-            if song == self.song:
-                self.favorite_button.configure(image=self.icons['heart'][0])
-        else:
-            self.songs_cache[song]['heart'].configure(image=self.icons['heart'][1])
-            self.settings['playlists']['Favorites']['Songs'].append(song)
-            if song == self.song:
-                self.favorite_button.configure(image=self.icons['heart'][1])
+    def favorites_song(self, song: str) -> None:
+        if self.library:
+            if song in self.settings['playlists']['Favorites']['Songs']:
+                self.songs_cache[song]['heart'].configure(image=self.icons['heart'][0])
+                self.settings['playlists']['Favorites']['Songs'].remove(song)
+                if song == self.song:
+                    self.favorite_button.configure(image=self.icons['heart'][0])
+            else:
+                self.songs_cache[song]['heart'].configure(image=self.icons['heart'][1])
+                self.settings['playlists']['Favorites']['Songs'].append(song)
+                if song == self.song:
+                    self.favorite_button.configure(image=self.icons['heart'][1])
 
-    def update_active_panel(self: ClassVar, song: str) -> None:
+    def update_active_panel(self, song: str) -> None:
         for active_song in self.active_panels:
             if active_song in self.songs_cache:
                 self.songs_cache[active_song]['play_pause'].configure(image=self.icons['play_pause'][0])
@@ -1004,24 +1035,28 @@ class Sounder(Tk):
             self.songs_cache[song]['play_pause'].configure(image=self.icons['play_pause'][1])
             self.active_panels.append(song)
 
-    def update_play_pause(self: ClassVar) -> None:
+    def update_play_pause(self) -> None:
         self.play_button.configure(image=self.icons['play_pause'][not self.paused and mixer.music.get_busy()])
 
-    def update_info_panel(self: ClassVar, song: str) -> None:
+    def update_info_panel(self, song: str) -> None:
         self.favorite_button.configure(image=self.icons['heart'][song in self.settings['playlists']['Favorites']['Songs']])
         if song in self.songs_cache:
             self.song_album.configure(image=self.songs_cache[song]['album_art'])
             self.song_title.configure(text=self.songs_cache[song]['title'])
             self.song_artist.configure(text=self.songs_cache[song]['artist'])
+        else:
+            self.song_album.configure(image=None)
+            self.song_title.configure(text='')
+            self.song_artist.configure(text='')
 
-    def update_progress_info(self: ClassVar, song: str) -> None:
+    def update_progress_info(self, song: str) -> None:
         minute: float = 0.0; second: float = 0.0
         minute, second = divmod(self.songs_cache[song]['length'], 60)
         self.time_passed['text'] = '0:00'
         self.song_length['text'] = f'{int(minute)}:{str(int(second)).zfill(2)}'
         self.progress_bar.configure(value=0, maximum=self.songs_cache[song]['length'])
 
-    def target_playlist(self: ClassVar) -> None:
+    def target_playlist(self) -> None:
         if self.library:
             self.playlist = self.menu_playlist.get()
             self.songs = self.library.copy() if self.playlist == 'Library' else self.settings['playlists'][self.playlist]['Songs']
@@ -1029,7 +1064,7 @@ class Sounder(Tk):
             if not self.paused and not mixer.music.get_busy():
                 self.button_play()
 
-    def init_mixer(self: ClassVar) -> None:
+    def init_mixer(self) -> None:
         try:
             size: int = 1024
             if self.settings['buffer'] == 'Slow': size = 2048
@@ -1039,7 +1074,7 @@ class Sounder(Tk):
         except Exception as err_obj:
             self.log(err_obj)
 
-    def mixer_play(self: ClassVar, song: str) -> None:
+    def mixer_play(self, song: str) -> None:
         try:
             if exists(song):
                 mixer.music.load(song)
@@ -1055,24 +1090,22 @@ class Sounder(Tk):
                     self.after_job = None
                 if not self.mixer_active:
                     self.mixer_thread()
-            else:
-                self.remove_song(song)
         except Exception as err_obj:
             self.log(err_obj)
 
-    def mixer_pause(self: ClassVar) -> None:
+    def mixer_pause(self) -> None:
         mixer.music.pause()
         self.paused = True
         self.update_active_panel(self.song)
         self.update_play_pause()
 
-    def mixer_unpause(self: ClassVar) -> None:
+    def mixer_unpause(self) -> None:
         mixer.music.unpause()
         self.paused = False
         self.update_active_panel(self.song)
         self.update_play_pause()
 
-    def panel_play(self: ClassVar, song: str) -> None:
+    def panel_play(self, song: str) -> None:
         if song == self.song and self.paused:
             self.mixer_unpause()
         elif song == self.song and not self.paused and mixer.music.get_busy():
@@ -1089,7 +1122,7 @@ class Sounder(Tk):
                 if self.songs and self.settings['shuffle']: shuffle(self.songs)
             self.mixer_play(song)
 
-    def button_play(self: ClassVar) -> None:
+    def button_play(self) -> None:
         if self.song and self.paused:
             self.mixer_unpause()
         elif self.song and not self.paused and mixer.music.get_busy():
@@ -1103,7 +1136,7 @@ class Sounder(Tk):
             if self.songs and self.settings['shuffle']: shuffle(self.songs)
             self.mixer_play(self.songs[0])
 
-    def mixer_thread(self: ClassVar) -> None:
+    def mixer_thread(self) -> None:
         self.mixer_active = True
         if mixer.music.get_busy() and self.song:
             position: float = mixer.music.get_pos() / 1000
@@ -1114,16 +1147,18 @@ class Sounder(Tk):
             self.mixer_active = False
             self.mixer_after()
 
-    def mixer_after(self: ClassVar) -> None:
+    def mixer_after(self) -> None:
         self.song_length['text'] = self.time_passed['text']
         self.update_active_panel('')
         self.update_play_pause()
         if self.settings['repeat'] == 'One':
             self.after_job = self.after(self.settings['crossfade'], self.button_play)
+
+
         elif self.settings['repeat'] == 'All':
             self.after_job = self.after(self.settings['crossfade'], self.button_next)
 
-    def button_next(self: ClassVar) -> None:
+    def button_next(self) -> None:
         if self.song in self.songs:
             new_index: int = self.songs.index(self.song) + 1
             self.song = self.songs[new_index if new_index < len(self.songs) else 0]
@@ -1132,7 +1167,7 @@ class Sounder(Tk):
             self.song = self.songs[0]
             self.mixer_play(self.song)
 
-    def button_previous(self: ClassVar) -> None:
+    def button_previous(self) -> None:
         if self.song in self.songs:
             new_index: int = self.songs.index(self.song) - 1
             self.song = self.songs[new_index if new_index >= 0 else -1]
@@ -1141,7 +1176,7 @@ class Sounder(Tk):
             self.song = self.songs[-1]
             self.mixer_play(self.song)
 
-    def toggle_volume(self: ClassVar) -> None:
+    def toggle_volume(self) -> None:
         if self.muted:
             self.set_volume(self.settings['volume'])
             self.muted = False
@@ -1150,7 +1185,7 @@ class Sounder(Tk):
             self.muted = True
             self.mute_button.configure(image=self.icons['speaker'][0])
 
-    def set_volume(self: ClassVar, volume: str) -> None:
+    def set_volume(self, volume: str) -> None:
         temp_volume: float = float(volume)
         if temp_volume == 0.0:
             self.mute_button.configure(image=self.icons['speaker'][0])
@@ -1165,7 +1200,7 @@ class Sounder(Tk):
         # check if muted
         if self.muted: self.muted = False
 
-    def toggle_repeat(self: ClassVar) -> None:
+    def toggle_repeat(self) -> None:
         if self.settings['repeat'] == 'None':
             self.settings['repeat'] = 'All'
             self.repeat_button.configure(image=self.icons['repeat'][0], style='second.TButton')
@@ -1176,12 +1211,12 @@ class Sounder(Tk):
             self.settings['repeat'] = 'None'
             self.repeat_button.configure(style='TButton', image=self.icons['repeat'][0])
 
-    def update_utilization(self: ClassVar) -> None:
+    def update_utilization(self) -> None:
         while True:
             self.cpu_usage_label['text'] = f'{round(self.process.cpu_percent(), 1)}%'
             self.memory_usage_label['text'] = f'{round(self.process.memory_percent(), 1)}%'
             sleep(1)
- 
+
 if __name__ == '__main__':
     Sounder().mainloop()
     
