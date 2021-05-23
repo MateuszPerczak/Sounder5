@@ -87,9 +87,9 @@ class Sounder(Tk):
     def init_settings(self) -> None:
         try:
             # variables
-            default_settings: dict = {'crossfade': 100, 'shuffle': False, 'start_playback': False, 'playlist': 'Library', 'repeat': 'None', 'buffer': 'Normal', 'last_song': '', 'volume': 0.5, 'sort_by': 'A-Z', 'scan_subfolders': False, 'geometry': '800x500', 'wheel_acceleration': 1.0, 'updates': True, 'folders': [], 'use_system_theme': True, 'theme': 'Light', 'page': 'Library', 'playlists': {'Favorites': {'Name': 'Favorites', 'Songs': []}}}
+            default_settings: dict = {'delete_missing': False, 'follow': 1, 'crossfade': 100, 'shuffle': False, 'start_playback': False, 'playlist': 'Library', 'repeat': 'None', 'buffer': 'Normal', 'last_song': '', 'volume': 0.5, 'sort_by': 'A-Z', 'scan_subfolders': False, 'geometry': '800x500', 'wheel_acceleration': 1.0, 'updates': True, 'folders': [], 'use_system_theme': True, 'theme': 'Light', 'page': 'Library', 'playlists': {'Favorites': {'Name': 'Favorites', 'Songs': []}}}
             self.settings: dict = {}
-            self.version: tuple = ('0.6.7', '230521')
+            self.version: tuple = ('0.6.8', '230521')
             # load settings
             if isfile('Resources\\Settings\\Settings.json'):
                 with open('Resources\\Settings\\Settings.json', 'r') as data:
@@ -210,7 +210,7 @@ class Sounder(Tk):
             'plus': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\plus.png').resize((25, 25))),
             'heart': (ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\heart_empty.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\heart_filled.png').resize((25, 25)))),
             'delete': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\delete.png').resize((25, 25))),
-            'playlist': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\playlist.png').resize((25, 25))),
+            'playlist': (ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\playlist.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\lounge.png').resize((25, 25)))),
             'play_pause': (ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\play.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\pause.png').resize((25, 25)))),
             'next': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\next.png').resize((25, 25))),
             'previous': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\previous.png').resize((25, 25))),
@@ -243,7 +243,7 @@ class Sounder(Tk):
             'processor': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\processor.png').resize((25, 25))),
             'memory': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\memory.png').resize((25, 25))),
             'performance': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\performance.png').resize((25, 25))),
-            'puzzled': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\puzzled.png').resize((25, 25)))
+            'puzzled': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\puzzled.png').resize((25, 25))),
             }
         self.iconphoto(False, self.icons['logo'])
 
@@ -276,11 +276,15 @@ class Sounder(Tk):
         self.start_playback: BooleanVar = BooleanVar(value=self.settings['start_playback'])
         # crossfade
         self.crossfade: DoubleVar = DoubleVar(value=self.settings['crossfade'])
+        # follow
+        self.follow: IntVar = IntVar(value=self.settings['follow'])
+        # missing
+        self.delete_missing: BooleanVar = BooleanVar(value=self.settings['delete_missing'])
         # player panel
         self.player_panel: ttk.Frame = ttk.Frame(self)
         # top panel
         player_top_panel: ttk.Frame = ttk.Frame(self.player_panel)
-        # menu panel 
+        # menu panel
         self.menu_panel: ttk.Frame = ttk.Frame(player_top_panel, style='second.TFrame')
         ttk.Radiobutton(self.menu_panel, image=self.icons['library'], text='Library', compound='left', value='Library', variable=self.menu_option, command=self.show_panel).pack(side='top', fill='x', padx=10, pady=(10, 0))
         ttk.Radiobutton(self.menu_panel, image=self.icons['folder'][1], text='Folders', compound='left', value='Folders', variable=self.menu_option, command=self.show_panel).pack(side='top', fill='x', padx=10, pady=10)
@@ -291,7 +295,7 @@ class Sounder(Tk):
         # add playlist from settings
         for playlist in self.settings['playlists']:
             if playlist == 'Favorites': continue
-            ttk.Radiobutton(self.menu_panel, image=self.icons['playlist'], text=self.settings['playlists'][playlist]['Name'], compound='left', value=playlist, style='menu.TRadiobutton', variable=self.menu_playlist, command=self.show_playlist).pack(side='top', fill='x', padx=10, pady=(10, 0))
+            ttk.Radiobutton(self.menu_panel, image=self.icons['playlist'][0], text=self.settings['playlists'][playlist]['Name'], compound='left', value=playlist, style='menu.TRadiobutton', variable=self.menu_playlist, command=self.show_playlist).pack(side='top', fill='x', padx=10, pady=(10, 0))
         self.menu_panel.pack(side='left', fill='both')
         # player scrollbar
         player_content_scroll = ttk.Scrollbar(player_top_panel, orient='vertical')
@@ -308,7 +312,6 @@ class Sounder(Tk):
         self.playlist_panel: ttk.Frame = ttk.Frame(player_options_panel)
         # playlist arbitrary name
         self.playlist_an: ttk.Label = ttk.Label(self.playlist_panel, text='', style='fourth.TLabel', compound='left')
-        
         self.playlist_an.pack(side='left', anchor='center', padx=(10, 0))
         self.playlist_an.bind('<Double-Button-1>', lambda _: self.playlist_options.lift())
         # playlist menu button
@@ -449,8 +452,20 @@ class Sounder(Tk):
         self.memory_usage_label: ttk.Label = ttk.Label(memory_usage, text='0%')
         self.memory_usage_label.pack(side='right', anchor='center', fill='y')
         memory_usage.pack(side='top', fill='x', pady=10, padx=10)
+        # follow active song
+        settings_active_song: ttk.Frame = ttk.Frame(self.player_content, style='second.TFrame')
+        ttk.Label(settings_active_song, image=self.icons['playlist'][1], text='Follow active song', compound='left').pack(side='left', anchor='center', fill='y', pady=10, padx=10)
+        ttk.Radiobutton(settings_active_song, text='Never follow', style='fourth.TRadiobutton', value=0, variable=self.follow, command=self.change_follow).pack(side='right', anchor='center', padx=(10, 10))
+        ttk.Radiobutton(settings_active_song, text='Smart follow', style='fourth.TRadiobutton', value=1, variable=self.follow, command=self.change_follow).pack(side='right', anchor='center', padx=(10, 0))
+        ttk.Radiobutton(settings_active_song, text='Always follow', style='fourth.TRadiobutton', value=2, variable=self.follow, command=self.change_follow).pack(side='right', anchor='center')
+        # missing songs
+        settings_missing_song: ttk.Frame = ttk.Frame(self.player_content, style='second.TFrame')
+        ttk.Label(settings_missing_song, image=self.icons['puzzled'], text='Automatically delete missing songs', compound='left').pack(side='left', anchor='center', fill='y', pady=10, padx=10)
+        ttk.Radiobutton(settings_missing_song, text='No', style='second.TRadiobutton', value=False, variable=self.delete_missing, command=self.change_missing).pack(side='right', anchor='center', padx=(10, 10))
+        ttk.Radiobutton(settings_missing_song, text='Yes', style='second.TRadiobutton', value=True, variable=self.delete_missing, command=self.change_missing).pack(side='right', anchor='center')
+
         # panels variable
-        self.settings_panels = (settings_acceleration, settings_theme, settings_startup, settings_crossfade, settings_subfolders, settings_updates, settings_buffer, settings_performance, settings_about)
+        self.settings_panels = (settings_acceleration, settings_theme, settings_startup, settings_crossfade, settings_active_song, settings_missing_song, settings_subfolders, settings_updates, settings_buffer, settings_performance, settings_about)
         # bottom panel
         player_bot_panel: ttk.Frame = ttk.Frame(self.player_panel, style='second.TFrame')
         # buttons, song name, etc ...
@@ -534,6 +549,7 @@ class Sounder(Tk):
         self.playlist: str = self.settings['playlist']
         self.songs: list = []
         self.after_job: Union[str, None] = None
+        self.songs_queue: list = []
         # set last song 
         self.song: str = self.settings['last_song']
         # init mixer
@@ -642,7 +658,7 @@ class Sounder(Tk):
                 self.playlist_entry.state(['disabled'])
                 self.playlist_entry.configure(cursor='no')
             else:
-                self.playlist_an['image'] = self.icons['playlist']
+                self.playlist_an['image'] = self.icons['playlist'][0]
                 self.playlist_entry.configure(cursor='ibeam')
                 # enable button
                 self.playlist_remove.state(['!disabled'])
@@ -651,7 +667,7 @@ class Sounder(Tk):
         playlist_id: str = ''.join(choices(ascii_uppercase + digits, k=4))
         if not playlist_id in self.settings['playlists']:
             self.settings['playlists'][playlist_id] = {'Name': f'Playlist {len(self.settings["playlists"])}', 'Songs': []}
-            ttk.Radiobutton(self.menu_panel, image=self.icons['playlist'], text=self.settings['playlists'][playlist_id]['Name'], compound='left', value=playlist_id, variable=self.menu_playlist, command=self.show_playlist).pack(side='top', fill='x', padx=10, pady=(10, 0))
+            ttk.Radiobutton(self.menu_panel, image=self.icons['playlist'][0], text=self.settings['playlists'][playlist_id]['Name'], compound='left', value=playlist_id, variable=self.menu_playlist, command=self.show_playlist).pack(side='top', fill='x', padx=10, pady=(10, 0))
             self.song_menu.append(playlist_id)
         
     def remove_playlist(self):
@@ -700,7 +716,11 @@ class Sounder(Tk):
             for playlist in self.settings['playlists']:
                 for song in self.settings['playlists'][playlist]['Songs']:
                     if not song in self.library:
-                        self.add_missing_song(song, playlist)
+                        if self.settings['delete_missing']:
+                            if song not in self.library:
+                                self.settings['playlists'][playlist]['Songs'].remove(song)
+                        else:
+                            self.add_missing_song(song, playlist)
         except Exception as err_obj:
             self.log(err_obj)
 
@@ -857,6 +877,12 @@ class Sounder(Tk):
     def change_crossfade(self, _: Event) -> None:
         self.settings['crossfade'] = int(self.crossfade.get())
 
+    def change_follow(self) -> None:
+        self.settings['follow'] = self.follow.get()
+
+    def change_missing(self) -> None:
+        self.settings['delete_missing'] = self.delete_missing.get()
+
     def update_thread(self) -> None:
         Thread(target=self.check_update, daemon=True).start()
 
@@ -920,8 +946,15 @@ class Sounder(Tk):
                     self.song_panels[song].pack_forget()
         # pack panels
         for song in temp_songs:
-            if song in self.song_panels and not self.song_panels[song].winfo_ismapped():
+            if song in self.song_panels and self.song_panels[song] and not self.song_panels[song].winfo_ismapped():
                 self.song_panels[song].pack(side='top', fill='x', pady=5, padx=10)
+        if self.settings['follow']:
+            self.show_song(temp_songs)
+
+    def show_song(self, songs: list) -> None:
+        if self.song in songs:
+            self.after(100, lambda: self.player_canvas.yview_moveto(float((songs.index(self.song) * 55) / self.player_content.winfo_height())))
+        if self.settings['follow'] == 2: self.songs_queue = songs
 
     def sort_songs(self, song: str) -> str:
         if song in self.songs_cache:
@@ -986,6 +1019,7 @@ class Sounder(Tk):
 
     def add_song(self, song: str) -> None:
         try:
+            if song in self.song_panels and self.song_panels[song]: self.song_panels[song].destroy()
             self.song_panels[song] = ttk.Frame(self.player_content, style='second.TFrame')
             ttk.Label(self.song_panels[song], image=self.songs_cache[song]['album_art']).pack(side='left', anchor='center', pady=10, padx=10)
             info_frame: ttk.Frame = ttk.Frame(self.song_panels[song], style='second.TFrame')
@@ -1164,6 +1198,7 @@ class Sounder(Tk):
         elif self.songs:
             self.song = self.songs[0]
             self.mixer_play(self.song)
+        self.follow_song()
 
     def button_previous(self) -> None:
         if self.song in self.songs:
@@ -1173,6 +1208,7 @@ class Sounder(Tk):
         elif self.songs:
             self.song = self.songs[-1]
             self.mixer_play(self.song)
+        self.follow_song()
 
     def toggle_volume(self) -> None:
         if self.muted:
@@ -1214,6 +1250,11 @@ class Sounder(Tk):
             self.cpu_usage_label['text'] = f'{round(self.process.cpu_percent(), 1)}%'
             self.memory_usage_label['text'] = f'{round(self.process.memory_percent(), 1)}%'
             sleep(1)
+
+    def follow_song(self) -> None:
+        playlist = self.menu_playlist.get()
+        if self.settings['follow'] == 2 and self.song in self.songs_queue and playlist == self.playlist:
+            self.player_canvas.yview_moveto(float((self.songs_queue.index(self.song) * 65) / self.player_content.winfo_height()))
 
 if __name__ == '__main__':
     Sounder().mainloop()
