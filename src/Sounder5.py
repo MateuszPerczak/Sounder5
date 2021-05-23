@@ -430,7 +430,7 @@ class Sounder(Tk):
         crossfade_panel: ttk.Frame = ttk.Frame(settings_crossfade, style='second.TFrame')
         ttk.Label(crossfade_panel, image=self.icons['time'], text='Crossfade', compound='left').pack(side='left', anchor='center', fill='y')
         ttk.Label(crossfade_panel, text='16s').pack(side='right', anchor='center', fill='y', padx=(10, 0))
-        ttk.Scale(crossfade_panel, from_=100, to=16000, variable=self.crossfade, command=self.change_crossfade).pack(side='right', anchor='center', fill='x', ipadx=40)
+        ttk.Scale(crossfade_panel, from_=100.0, to=16000.0, variable=self.crossfade, command=self.change_crossfade).pack(side='right', anchor='center', fill='x', ipadx=40)
         ttk.Label(crossfade_panel, text='Off').pack(side='right', anchor='center', fill='y', padx=(0, 10))
         crossfade_panel.pack(side='top', fill='x', pady=10, padx=10)
         ttk.Label(settings_crossfade, image=self.icons['info'], text='Note: Allows you to crossfade between songs!', compound='left').pack(side='top', fill='x', padx=10, pady=(0, 10))
@@ -855,7 +855,7 @@ class Sounder(Tk):
                 self.sort_panels('', self.settings['playlists'][selected_playlist]['Songs'], True)
 
     def change_crossfade(self, _: Event) -> None:
-        self.settings['crossfade'] = self.crossfade.get()
+        self.settings['crossfade'] = int(self.crossfade.get())
 
     def update_thread(self) -> None:
         Thread(target=self.check_update, daemon=True).start()
@@ -1152,9 +1152,8 @@ class Sounder(Tk):
         self.update_active_panel('')
         self.update_play_pause()
         if self.settings['repeat'] == 'One':
+            print(self.settings['crossfade'])
             self.after_job = self.after(self.settings['crossfade'], self.button_play)
-
-
         elif self.settings['repeat'] == 'All':
             self.after_job = self.after(self.settings['crossfade'], self.button_next)
 
