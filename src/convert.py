@@ -44,19 +44,18 @@ ignore_files: tuple = ()
 for icon in files:
     printProgressBar(files.index(icon), len(files) - 1, prefix = 'Progress:', suffix = 'Complete', length = 50)
     if icon in ignore_files: continue
-    image: ClassVar = Image.open(join(from_path, icon))
+    image: Image = Image.open(join(from_path, icon))
     if image.mode == 'RGBA':
-        red: ClassVar; green: ClassVar; blue: ClassVar; alpha: ClassVar
         red, green, blue, alpha = image.split()
         del image
         # inverted image
-        temp_icon: ClassVar = Image.merge('RGB', (red, green, blue))
-        inverted_image: ClassVar = invert(temp_icon)
+        temp_icon: Image = Image.merge('RGB', (red, green, blue))
+        inverted_image: Image = invert(temp_icon)
         del temp_icon
         # get RGB values of inverted image
         red, green, blue = inverted_image.split()
         del inverted_image
-        new_image: ClassVar = Image.merge('RGBA', (red, green, blue, alpha))
+        new_image: Image = Image.merge('RGBA', (red, green, blue, alpha))
         # save new image to new dir
         new_image.save(join(to_path, icon))
         del new_image, red, green, blue, alpha

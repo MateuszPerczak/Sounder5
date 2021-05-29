@@ -1,12 +1,12 @@
 try:
     from tkinter import Tk, ttk, StringVar, BooleanVar, DoubleVar, Canvas, Event, Toplevel, IntVar
-    from tkinter.filedialog import askdirectory
+    from tkinter.filedialog import askdirectory, askopenfilename, asksaveasfile
     from tkinter.messagebox import askyesno
     from os.path import isfile, join, isdir, basename, abspath, join, splitext, dirname, exists
     from os import startfile, listdir, walk, getpid# getcwd, listdir, startfile, remove
     from json import load, dump
     from json.decoder import JSONDecodeError
-    from logging import basicConfig, error, getLevelName, getLogger, shutdown
+    from logging import basicConfig, error
     from traceback import format_exc
     from PIL import Image, ImageTk
     from io import BytesIO
@@ -65,7 +65,7 @@ class Sounder(Tk):
 
     def init_logging(self) -> None:
         # logging error messages
-        basicConfig(filename=f'Resources\\Dumps\\dump.txt', level=40)
+        basicConfig(filename=fr'Resources\\Dumps\\dump.txt', level=40)
         self.process = Process(getpid())
 
     def log(self, err_obj) -> None:
@@ -89,10 +89,10 @@ class Sounder(Tk):
             # variables
             default_settings: dict = {'delete_missing': False, 'follow': 1, 'crossfade': 100, 'shuffle': False, 'start_playback': False, 'playlist': 'Library', 'repeat': 'None', 'buffer': 'Normal', 'last_song': '', 'volume': 0.5, 'sort_by': 'A-Z', 'scan_subfolders': False, 'geometry': '800x500', 'wheel_acceleration': 1.0, 'updates': True, 'folders': [], 'use_system_theme': True, 'theme': 'Light', 'page': 'Library', 'playlists': {'Favorites': {'Name': 'Favorites', 'Songs': []}}}
             self.settings: dict = {}
-            self.version: tuple = ('0.6.8', '230521')
+            self.version: tuple = ('0.7.0', '290521')
             # load settings
-            if isfile('Resources\\Settings\\Settings.json'):
-                with open('Resources\\Settings\\Settings.json', 'r') as data:
+            if isfile(r'Resources\\Settings\\Settings.json'):
+                with open(r'Resources\\Settings\\Settings.json', 'r') as data:
                     try:
                         self.settings = load(data)
                     except JSONDecodeError as err_obj:
@@ -132,7 +132,7 @@ class Sounder(Tk):
         # save active playlists
         self.settings['playlist'] = self.playlist
         try:
-            with open('Resources\\Settings\\Settings.json', 'w') as data:
+            with open(r'Resources\\Settings\\Settings.json', 'w') as data:
                 dump(self.settings, data)
         except Exception as err_obj:
             self.log(err_obj)
@@ -203,47 +203,47 @@ class Sounder(Tk):
 
     def load_icons(self) -> None:
         self.icons: dict = {
-            'error': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\error.png').resize((100, 100))),
-            'library': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\library.png').resize((25, 25))),
-            'folder': (ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\folder.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\music_folder.png').resize((25, 25)))),
-            'settings': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\settings.png').resize((25, 25))),
-            'plus': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\plus.png').resize((25, 25))),
-            'heart': (ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\heart_empty.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\heart_filled.png').resize((25, 25)))),
-            'delete': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\delete.png').resize((25, 25))),
-            'playlist': (ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\playlist.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\lounge.png').resize((25, 25)))),
-            'play_pause': (ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\play.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\pause.png').resize((25, 25)))),
-            'next': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\next.png').resize((25, 25))),
-            'previous': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\previous.png').resize((25, 25))),
-            'repeat': (ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\repeat.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\repeat_one.png').resize((25, 25)))),
-            'shuffle': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\shuffle.png').resize((25, 25))),
-            'edit': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\edit.png').resize((25, 25))),
-            'menu': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\menu.png').resize((25, 25))),
-            'clock': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\clock.png').resize((25, 25))),
-            'note': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\note.png').resize((25, 25))),
-            'arrow': (ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\left.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\right.png').resize((25, 25)))),
-            'checkmark': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\checkmark.png').resize((25, 25))),
-            'restore': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\restore.png').resize((25, 25))),
-            'brush': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\brush.png').resize((25, 25))),
-            'info': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\info.png').resize((25, 25))),
-            'window': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\window.png').resize((25, 25))),
-            'user': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\user.png').resize((25, 25))),
-            'icons8': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\icons8.png').resize((25, 25))),
-            'code': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\code.png').resize((25, 25))),
-            'logo': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\logo.png').resize((25, 25))),
-            'download': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\download.png').resize((25, 25))),
-            'wheel': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\wheel.png').resize((25, 25))),
-            'search': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\search.png').resize((25, 25))),
-            'filter': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\filter.png').resize((25, 25))),
-            'speaker': (ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\muted.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\low_volume.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\med_volume.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\max_volume.png').resize((25, 25)))),
-            'buffer': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\buffer.png').resize((25, 25))),
-            'select': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\select.png').resize((25, 25))),
-            'power': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\power.png').resize((25, 25))),
-            'time': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\time.png').resize((25, 25))),
-            'sort': (ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\no_sort.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\normal_sort.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\reversed_sort.png').resize((25, 25)))),
-            'processor': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\processor.png').resize((25, 25))),
-            'memory': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\memory.png').resize((25, 25))),
-            'performance': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\performance.png').resize((25, 25))),
-            'puzzled': ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\puzzled.png').resize((25, 25))),
+            'error': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\error.png').resize((100, 100))),
+            'library': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\library.png').resize((25, 25))),
+            'folder': (ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\folder.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\music_folder.png').resize((25, 25)))),
+            'settings': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\settings.png').resize((25, 25))),
+            'plus': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\plus.png').resize((25, 25))),
+            'heart': (ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\heart_empty.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\heart_filled.png').resize((25, 25)))),
+            'delete': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\delete.png').resize((25, 25))),
+            'playlist': (ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\playlist.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\lounge.png').resize((25, 25)))),
+            'play_pause': (ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\play.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\pause.png').resize((25, 25)))),
+            'next': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\next.png').resize((25, 25))),
+            'previous': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\previous.png').resize((25, 25))),
+            'repeat': (ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\repeat.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\repeat_one.png').resize((25, 25)))),
+            'shuffle': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\shuffle.png').resize((25, 25))),
+            'edit': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\edit.png').resize((25, 25))),
+            'menu': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\menu.png').resize((25, 25))),
+            'clock': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\clock.png').resize((25, 25))),
+            'note': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\note.png').resize((25, 25))),
+            'arrow': (ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\left.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\right.png').resize((25, 25)))),
+            'checkmark': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\checkmark.png').resize((25, 25))),
+            'restore': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\restore.png').resize((25, 25))),
+            'brush': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\brush.png').resize((25, 25))),
+            'info': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\info.png').resize((25, 25))),
+            'window': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\window.png').resize((25, 25))),
+            'user': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\user.png').resize((25, 25))),
+            'icons8': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\icons8.png').resize((25, 25))),
+            'code': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\code.png').resize((25, 25))),
+            'logo': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\logo.png').resize((25, 25))),
+            'download': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\download.png').resize((25, 25))),
+            'wheel': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\wheel.png').resize((25, 25))),
+            'search': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\search.png').resize((25, 25))),
+            'filter': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\filter.png').resize((25, 25))),
+            'speaker': (ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\muted.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\low_volume.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\med_volume.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\max_volume.png').resize((25, 25)))),
+            'buffer': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\buffer.png').resize((25, 25))),
+            'select': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\select.png').resize((25, 25))),
+            'power': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\power.png').resize((25, 25))),
+            'time': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\time.png').resize((25, 25))),
+            'sort': (ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\no_sort.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\normal_sort.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\reversed_sort.png').resize((25, 25)))),
+            'processor': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\processor.png').resize((25, 25))),
+            'memory': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\memory.png').resize((25, 25))),
+            'performance': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\performance.png').resize((25, 25))),
+            'puzzled': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\puzzled.png').resize((25, 25))),
             }
         self.iconphoto(False, self.icons['logo'])
 
@@ -347,12 +347,12 @@ class Sounder(Tk):
         ttk.Button(self.library_options, image=self.icons['filter'], style='second.TButton', command=lambda: self.sort_options.lift()).pack(side='right', anchor='center', padx=(0, 15))
         ttk.Button(self.library_options, image=self.icons['select'], style='second.TButton', command=self.target_playlist).pack(side='right', anchor='center', padx=(0, 5))
         # library search bar
-        search_panel: ttk.Frame = ttk.Frame(self.library_options)
-        self.lib_search: ttk.Button = ttk.Button(search_panel, image=self.icons['search'], style='second.TButton', command=self.open_search)
+        no_songs: ttk.Frame = ttk.Frame(self.library_options)
+        self.lib_search: ttk.Button = ttk.Button(no_songs, image=self.icons['search'], style='second.TButton', command=self.open_search)
         self.lib_search.pack(side='right', anchor='center')
-        self.lib_entry =ttk.Entry(search_panel, exportselection=False, font=('catamaran 15 bold'), width=12, style='second.TEntry')
+        self.lib_entry =ttk.Entry(no_songs, exportselection=False, font=('catamaran 15 bold'), width=12, style='second.TEntry')
         self.lib_entry.bind('<Return>', self.search)
-        search_panel.pack(side='right', anchor='center', padx=(0, 5))
+        no_songs.pack(side='right', anchor='center', padx=(0, 5))
         self.library_options.place(x=0, y=0, relwidth=1, relheight=1)
         # sort options
         self.sort_options: ttk.Frame = ttk.Frame(player_options_panel)
@@ -454,18 +454,28 @@ class Sounder(Tk):
         memory_usage.pack(side='top', fill='x', pady=10, padx=10)
         # follow active song
         settings_active_song: ttk.Frame = ttk.Frame(self.player_content, style='second.TFrame')
-        ttk.Label(settings_active_song, image=self.icons['playlist'][1], text='Follow active song', compound='left').pack(side='left', anchor='center', fill='y', pady=10, padx=10)
-        ttk.Radiobutton(settings_active_song, text='Never follow', style='fourth.TRadiobutton', value=0, variable=self.follow, command=self.change_follow).pack(side='right', anchor='center', padx=(10, 10))
-        ttk.Radiobutton(settings_active_song, text='Smart follow', style='fourth.TRadiobutton', value=1, variable=self.follow, command=self.change_follow).pack(side='right', anchor='center', padx=(10, 0))
-        ttk.Radiobutton(settings_active_song, text='Always follow', style='fourth.TRadiobutton', value=2, variable=self.follow, command=self.change_follow).pack(side='right', anchor='center')
+        active_song_panel: ttk.Frame = ttk.Frame(settings_active_song, style='second.TFrame')
+        ttk.Label(active_song_panel, image=self.icons['playlist'][1], text='Follow active song', compound='left').pack(side='left', anchor='center', fill='y')
+        ttk.Radiobutton(active_song_panel, text='Never follow', style='fourth.TRadiobutton', value=0, variable=self.follow, command=self.change_follow).pack(side='right', anchor='center')
+        ttk.Radiobutton(active_song_panel, text='Smart follow', style='fourth.TRadiobutton', value=1, variable=self.follow, command=self.change_follow).pack(side='right', anchor='center', padx=(10, 10))
+        ttk.Radiobutton(active_song_panel, text='Always follow', style='fourth.TRadiobutton', value=2, variable=self.follow, command=self.change_follow).pack(side='right', anchor='center')
+        active_song_panel.pack(side='top', fill='x', pady=10, padx=10)
+        ttk.Label(settings_active_song, image=self.icons['info'], text='Note: Sounder will automatically scroll to an active song if found in playlist!', compound='left').pack(side='top', fill='x', padx=10, pady=(0, 10))
         # missing songs
         settings_missing_song: ttk.Frame = ttk.Frame(self.player_content, style='second.TFrame')
-        ttk.Label(settings_missing_song, image=self.icons['puzzled'], text='Automatically delete missing songs', compound='left').pack(side='left', anchor='center', fill='y', pady=10, padx=10)
-        ttk.Radiobutton(settings_missing_song, text='No', style='second.TRadiobutton', value=False, variable=self.delete_missing, command=self.change_missing).pack(side='right', anchor='center', padx=(10, 10))
-        ttk.Radiobutton(settings_missing_song, text='Yes', style='second.TRadiobutton', value=True, variable=self.delete_missing, command=self.change_missing).pack(side='right', anchor='center')
-
+        missing_song_panel: ttk.Frame = ttk.Frame(settings_missing_song, style='second.TFrame')
+        ttk.Label(missing_song_panel, image=self.icons['puzzled'], text='Automatically delete missing songs', compound='left').pack(side='left', anchor='center', fill='y')
+        ttk.Radiobutton(missing_song_panel, text='No', style='second.TRadiobutton', value=False, variable=self.delete_missing, command=self.change_missing).pack(side='right', anchor='center')
+        ttk.Radiobutton(missing_song_panel, text='Yes', style='second.TRadiobutton', value=True, variable=self.delete_missing, command=self.change_missing).pack(side='right', anchor='center', padx=(10, 10))
+        missing_song_panel.pack(side='top', fill='x', pady=10, padx=10)
+        ttk.Label(settings_missing_song, image=self.icons['info'], text='Note: Sounder will delete any missing songs from playlists!', compound='left').pack(side='top', fill='x', padx=10, pady=(0, 10))        
+        # export playlists
+        settings_export: ttk.Frame = ttk.Frame(self.player_content, style='second.TFrame')
+        ttk.Label(settings_export, image=self.icons['restore'], text='Export/Import settings', compound='left').pack(side='left', anchor='center', fill='y', pady=10, padx=10)
+        ttk.Button(settings_export, text='Export', style='third.TButton', command=self.export_settings).pack(side='right', anchor='center', padx=(0, 10))
+        ttk.Button(settings_export, text='Import', style='third.TButton', command=self.import_settings).pack(side='right', anchor='center', padx=(0, 10))
         # panels variable
-        self.settings_panels = (settings_acceleration, settings_theme, settings_startup, settings_crossfade, settings_active_song, settings_missing_song, settings_subfolders, settings_updates, settings_buffer, settings_performance, settings_about)
+        self.settings_panels = (settings_acceleration, settings_theme, settings_startup, settings_crossfade, settings_active_song, settings_missing_song, settings_subfolders, settings_updates, settings_export, settings_buffer, settings_performance, settings_about)
         # bottom panel
         player_bot_panel: ttk.Frame = ttk.Frame(self.player_panel, style='second.TFrame')
         # buttons, song name, etc ...
@@ -537,8 +547,8 @@ class Sounder(Tk):
         # show main panel
         self.player_panel.lift()
         # info panels
-        self.search_panel: ttk.Frame = ttk.Frame(self.player_content, style='second.TFrame')
-        ttk.Label(self.search_panel, image=self.icons['info'], text='No songs found!', compound='left').pack(side='left', anchor='center', fill='y', pady=10, padx=10)
+        self.no_songs: ttk.Frame = ttk.Frame(self.player_content, style='second.TFrame')
+        ttk.Label(self.no_songs, image=self.icons['info'], text='No songs found!', compound='left').pack(side='left', anchor='center', fill='y', pady=10, padx=10)
 
     def init_player(self) -> None:
         # variables
@@ -606,8 +616,8 @@ class Sounder(Tk):
                 for song in self.song_panels:
                     if self.song_panels[song].winfo_ismapped():
                         self.song_panels[song].pack_forget()
-                if self.search_panel.winfo_ismapped():
-                    self.search_panel.pack_forget()
+                if self.no_songs.winfo_ismapped():
+                    self.no_songs.pack_forget()
             # pack
             if panel == 'Folders':
                 for folder in self.folder_panels:
@@ -624,7 +634,7 @@ class Sounder(Tk):
         self.last_panel = panel
 
     def open_logs(self) -> None:
-        if isfile('Resources\\Dumps\\dump.txt'): startfile('Resources\\Dumps\\dump.txt')
+        if isfile(r'Resources\\Dumps\\dump.txt'): startfile(r'Resources\\Dumps\\dump.txt')
 
     def on_wheel(self, event: Event) -> None:
         self.player_canvas.yview_scroll(int(-self.settings['wheel_acceleration']*(event.delta/120)), 'units')
@@ -847,7 +857,7 @@ class Sounder(Tk):
         try:
             server_version: str = get('https://raw.githubusercontent.com/losek1/Sounder5/master/updates/version.txt').text
             if server_version != self.version[0] and int(server_version.replace('.', '')) > int(self.version[0].replace('.', '')):
-                self.toaster.show_toast(f'Update {server_version} is available', 'If you don\'t want to see this message go to settings and disable automatic updates!', threaded=True, icon_path='Resources\\Icons\\Updater\\setup.ico')
+                self.toaster.show_toast(f'Update {server_version} is available', 'If you don\'t want to see this message go to settings and disable automatic updates!', threaded=True, icon_path=r'Resources\\Icons\\Updater\\setup.ico')
                 self.update_panel.lift()
         except Exception as err_obj:
             self.log(err_obj)
@@ -928,9 +938,9 @@ class Sounder(Tk):
         elif self.settings['sort_by'] == 'Z-A':
             temp_songs.sort(key=self.sort_songs, reverse=True)
         if not temp_songs:
-            self.search_panel.pack(side='top', fill='x', pady=5, padx=10)
+            self.no_songs.pack(side='top', fill='x', pady=5, padx=10)
         else:
-            self.search_panel.pack_forget()
+            self.no_songs.pack_forget()
         # apply search
         if self.playlist == 'Library': self.songs = temp_songs.copy()
         # apply shuffle
@@ -953,7 +963,7 @@ class Sounder(Tk):
 
     def show_song(self, songs: list) -> None:
         if self.song in songs:
-            self.after(100, lambda: self.player_canvas.yview_moveto(float((songs.index(self.song) * 55) / self.player_content.winfo_height())))
+            self.after(100, lambda: self.player_canvas.yview_moveto(float((songs.index(self.song) * 65) / self.player_content.winfo_height())))
         if self.settings['follow'] == 2: self.songs_queue = songs
 
     def sort_songs(self, song: str) -> str:
@@ -1249,12 +1259,30 @@ class Sounder(Tk):
         while True:
             self.cpu_usage_label['text'] = f'{round(self.process.cpu_percent(), 1)}%'
             self.memory_usage_label['text'] = f'{round(self.process.memory_percent(), 1)}%'
-            sleep(1)
+            sleep(1.5)
 
     def follow_song(self) -> None:
         playlist = self.menu_playlist.get()
         if self.settings['follow'] == 2 and self.song in self.songs_queue and playlist == self.playlist:
             self.player_canvas.yview_moveto(float((self.songs_queue.index(self.song) * 65) / self.player_content.winfo_height()))
+
+    def import_settings(self) -> None:
+        try:
+            settings_file: str = askopenfilename(title='Open a settings file', initialdir='/', filetypes=(('Sounder settings files', '*.json'),))
+            if settings_file:
+                with open(settings_file, 'r') as data:
+                    try:
+                        self.settings.update(load(data))
+                    except JSONDecodeError as err_obj:
+                        self.log(err_obj)
+        except Exception as err_obj:
+            self.log(err_obj)
+
+    def export_settings(self) -> None:
+        settings_file = asksaveasfile(mode='w', defaultextension='.json', filetypes=(('Sounder settings files', '*.json'),))
+        if settings_file:
+            dump(self.settings, settings_file)
+
 
 if __name__ == '__main__':
     Sounder().mainloop()
