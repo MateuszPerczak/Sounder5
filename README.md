@@ -46,7 +46,6 @@ docker run -it sounder-dev
 
 ## Used Libraries
 
-- typing
 - tkinter
 - os
 - json
