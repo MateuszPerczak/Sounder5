@@ -15,7 +15,6 @@ try:
     from Components.SystemTheme import get_theme
     from Components.Debugger import Debugger
     from Components.Setup import SSetup
-    from Components.le import compare
     from Components.SongMenu import SongMenu
     from requests import get
     from threading import Thread
@@ -89,7 +88,7 @@ class Sounder(Tk):
             # variables
             default_settings: dict = {'delete_missing': False, 'follow': 1, 'crossfade': 100, 'shuffle': False, 'start_playback': False, 'playlist': 'Library', 'repeat': 'None', 'buffer': 'Normal', 'last_song': '', 'volume': 0.5, 'sort_by': 'A-Z', 'scan_subfolders': False, 'geometry': '800x500', 'wheel_acceleration': 1.0, 'updates': True, 'folders': [], 'use_system_theme': True, 'theme': 'Light', 'page': 'Library', 'playlists': {'Favorites': {'Name': 'Favorites', 'Songs': []}}}
             self.settings: dict = {}
-            self.version: tuple = ('0.7.0', '290521')
+            self.version: tuple = ('0.7.1', '010621')
             # load settings
             if isfile(r'Resources\\Settings\\Settings.json'):
                 with open(r'Resources\\Settings\\Settings.json', 'r') as data:
@@ -240,10 +239,7 @@ class Sounder(Tk):
             'power': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\power.png').resize((25, 25))),
             'time': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\time.png').resize((25, 25))),
             'sort': (ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\no_sort.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\normal_sort.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\reversed_sort.png').resize((25, 25)))),
-            'processor': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\processor.png').resize((25, 25))),
-            'memory': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\memory.png').resize((25, 25))),
-            'performance': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\performance.png').resize((25, 25))),
-            'puzzled': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\puzzled.png').resize((25, 25))),
+            'puzzled': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\puzzled.png').resize((25, 25)))
             }
         self.iconphoto(False, self.icons['logo'])
 
@@ -437,21 +433,6 @@ class Sounder(Tk):
         ttk.Label(crossfade_panel, text='Off').pack(side='right', anchor='center', fill='y', padx=(0, 10))
         crossfade_panel.pack(side='top', fill='x', pady=10, padx=10)
         ttk.Label(settings_crossfade, image=self.icons['info'], text='Note: Allows you to crossfade between songs!', compound='left').pack(side='top', fill='x', padx=10, pady=(0, 10))
-        # performance
-        settings_performance: ttk.Frame = ttk.Frame(self.player_content, style='second.TFrame')
-        ttk.Label(settings_performance, image=self.icons['performance'], text='Performance', compound='left').pack(side='top', anchor='center', fill='x', padx=10, pady=(10, 0))
-        # cpu usage
-        cpu_usage: ttk.Frame = ttk.Frame(settings_performance, style='second.TFrame')
-        ttk.Label(cpu_usage, image=self.icons['processor'], text='Cpu utilization', compound='left').pack(side='left', anchor='center', fill='y')
-        self.cpu_usage_label: ttk.Label = ttk.Label(cpu_usage, text='0%')
-        self.cpu_usage_label.pack(side='right', anchor='center', fill='y')
-        cpu_usage.pack(side='top', fill='x', pady=(10, 0), padx=10)
-        # memory usage
-        memory_usage: ttk.Frame = ttk.Frame(settings_performance, style='second.TFrame')
-        ttk.Label(memory_usage, image=self.icons['memory'], text='Memory utilization', compound='left').pack(side='left', anchor='center', fill='y')
-        self.memory_usage_label: ttk.Label = ttk.Label(memory_usage, text='0%')
-        self.memory_usage_label.pack(side='right', anchor='center', fill='y')
-        memory_usage.pack(side='top', fill='x', pady=10, padx=10)
         # follow active song
         settings_active_song: ttk.Frame = ttk.Frame(self.player_content, style='second.TFrame')
         active_song_panel: ttk.Frame = ttk.Frame(settings_active_song, style='second.TFrame')
@@ -475,7 +456,7 @@ class Sounder(Tk):
         ttk.Button(settings_export, text='Export', style='third.TButton', command=self.export_settings).pack(side='right', anchor='center', padx=(0, 10))
         ttk.Button(settings_export, text='Import', style='third.TButton', command=self.import_settings).pack(side='right', anchor='center', padx=(0, 10))
         # panels variable
-        self.settings_panels = (settings_acceleration, settings_theme, settings_startup, settings_crossfade, settings_active_song, settings_missing_song, settings_subfolders, settings_updates, settings_export, settings_buffer, settings_performance, settings_about)
+        self.settings_panels = (ttk.Label(self.player_content, text=' Appearance', style='third.TLabel'), settings_acceleration, settings_theme, ttk.Label(self.player_content, text=' Playback', style='third.TLabel'), settings_startup, settings_crossfade, settings_buffer, settings_active_song, settings_missing_song, settings_crossfade, ttk.Label(self.player_content, text=' Folders', style='third.TLabel'), settings_subfolders, ttk.Label(self.player_content, text=' Other', style='third.TLabel'), settings_updates, settings_export, settings_about)
         # bottom panel
         player_bot_panel: ttk.Frame = ttk.Frame(self.player_panel, style='second.TFrame')
         # buttons, song name, etc ...
@@ -580,8 +561,6 @@ class Sounder(Tk):
         self.mixer_active: bool = False
         if self.settings['start_playback']:
             self.after(200, self.button_play)
-        # update utilization
-        Thread(target=self.update_utilization, daemon=True).start()
 
     def exit_app(self) -> None:
         self.withdraw()
@@ -927,8 +906,8 @@ class Sounder(Tk):
         # apply search
         if search_word:
             for song in songs:
-                result = f'{self.songs_cache[song]["title"]} {self.songs_cache[song]["artist"]} {self.songs_cache[song]["album"]} {song}'
-                if findall(search_word, result.lower()) or compare(search_word, self.songs_cache[song]['title'], 3) or compare(search_word, self.songs_cache[song]['artist'], 3) or compare(search_word, self.songs_cache[song]['album'], 3):
+                result = f'{self.songs_cache[song]["title"]} {self.songs_cache[song]["artist"]} {self.songs_cache[song]["album"]} {song} {self.songs_cache[song]["genre"]}'
+                if findall(search_word, result.lower()):
                     temp_songs.append(song)
         else:
             temp_songs = songs.copy()
@@ -993,6 +972,7 @@ class Sounder(Tk):
         song_title: str = splitext(basename(song))[0]
         song_artist: str = 'Unknown'
         album: str = 'Unknown'
+        genre: str = 'Unknown'
         song_metadata = None
         if song.endswith('.mp3'):
             song_metadata = MP3(song)
@@ -1002,6 +982,8 @@ class Sounder(Tk):
                 song_artist = f'{song_metadata["TPE1"]}'
             if 'TALB' in song_metadata:
                 album = f'{song_metadata["TALB"]}'
+            if 'TCON' in song_metadata:
+                genre = f'{song_metadata["TCON"]}'
             if 'APIC:' in song_metadata:
                 album_art = ImageTk.PhotoImage(Image.open(BytesIO(song_metadata.get('APIC:').data)).resize((25, 25)))
         elif song.endswith('.flac'):
@@ -1021,7 +1003,7 @@ class Sounder(Tk):
             if 'comment' in song_metadata:
                 song_artist = song_artist.join(song_metadata['comment'])
         # cache data
-        self.songs_cache[song] =  {'title': song_title, 'artist': song_artist, 'album': album, 'album_art': album_art, 'length': song_metadata.info.length}
+        self.songs_cache[song] =  {'title': song_title, 'artist': song_artist, 'album': album, 'album_art': album_art, 'length': song_metadata.info.length, 'kbps': song_metadata.info.bitrate, 'genre': genre}
 
     def new_song(self, song: str) -> None:
         self.cache_song(song)
@@ -1211,14 +1193,17 @@ class Sounder(Tk):
         self.follow_song()
 
     def button_previous(self) -> None:
-        if self.song in self.songs:
-            new_index: int = self.songs.index(self.song) - 1
-            self.song = self.songs[new_index if new_index >= 0 else -1]
+        if mixer.music.get_pos() > 3000:
             self.mixer_play(self.song)
-        elif self.songs:
-            self.song = self.songs[-1]
-            self.mixer_play(self.song)
-        self.follow_song()
+        else:
+            if self.song in self.songs:
+                new_index: int = self.songs.index(self.song) - 1
+                self.song = self.songs[new_index if new_index >= 0 else -1]
+                self.mixer_play(self.song)
+            elif self.songs:
+                self.song = self.songs[-1]
+                self.mixer_play(self.song)
+            self.follow_song()
 
     def toggle_volume(self) -> None:
         if self.muted:
@@ -1255,12 +1240,6 @@ class Sounder(Tk):
             self.settings['repeat'] = 'None'
             self.repeat_button.configure(style='TButton', image=self.icons['repeat'][0])
 
-    def update_utilization(self) -> None:
-        while True:
-            self.cpu_usage_label['text'] = f'{round(self.process.cpu_percent(), 1)}%'
-            self.memory_usage_label['text'] = f'{round(self.process.memory_percent(), 1)}%'
-            sleep(1.5)
-
     def follow_song(self) -> None:
         playlist = self.menu_playlist.get()
         if self.settings['follow'] == 2 and self.song in self.songs_queue and playlist == self.playlist:
@@ -1275,6 +1254,7 @@ class Sounder(Tk):
                         self.settings.update(load(data))
                     except JSONDecodeError as err_obj:
                         self.log(err_obj)
+                self.save_settings()
         except Exception as err_obj:
             self.log(err_obj)
 
