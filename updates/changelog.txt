@@ -1,0 +1,6 @@
+Changelog:
++ Added proper update screen!
++ Added updater yassssss.
++ Added update history
+~ Some small code tweaks ;)
+*We are getting somewhere
