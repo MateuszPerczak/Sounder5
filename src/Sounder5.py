@@ -938,6 +938,7 @@ class Sounder(Tk):
                     dump(default_updates, data)
                 except Exception as err_obj:
                     self.log(err_obj)
+            updates_history = default_updates
         # add package panel
         self.update_panel(package_size, package_version, package_details, updates_history)
         # show update

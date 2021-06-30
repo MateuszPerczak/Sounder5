@@ -1,7 +1,2 @@
 Changelog:
-+ Added proper update screen!
-+ Added updater yassssss.
-+ Added update history.
-~ Sounder will now monitor music folders for any changes.
-~ Some small code tweaks ;)
-*We are getting somewhere!
+~ Fixed bug that caused sounder to crash when trying to load update history.

@@ -97,3 +97,10 @@ Traceback (most recent call last):
   File "d:/Python/New Projects/Sounder5/Sounder5.py", line 905, in update_panel
     for update in updates_history['Updates'].reverse():
 TypeError: 'NoneType' object is not iterable
+ERROR:root:local variable 'updates_history' referenced before assignment
+Traceback (most recent call last):
+  File "d:/Python/New Projects/Sounder5/Sounder5.py", line 873, in check_update
+    self.prepare_update_panel(server_version)
+  File "d:/Python/New Projects/Sounder5/Sounder5.py", line 942, in prepare_update_panel
+    self.update_panel(package_size, package_version, package_details, updates_history)
+UnboundLocalError: local variable 'updates_history' referenced before assignment
