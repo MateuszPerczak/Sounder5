@@ -1,19 +1,23 @@
 try:
-    from typing import ClassVar
     from tkinter import Tk, ttk
     from time import sleep
     from sys import argv
     from os import remove, rename, startfile
     from os.path import basename, isfile
     from requests import get
+    from zipfile import ZipFile
+    from io import BytesIO
     from sys import exit
     from psutil import process_iter
     from threading import Thread
-    from Components.Debugger import Debugger
-    from logging import basicConfig, error, getLevelName, getLogger, shutdown
+    # from Components.Debugger import Debugger
+    from logging import basicConfig, error
     from PIL import Image, ImageSequence, ImageTk
-    from time import sleep
+    from time import sleep, strftime
     from traceback import format_exc
+    from hashlib import sha256
+    from json import dump, load
+    from json.decoder import JSONDecodeError
 except ImportError as err:
     exit(err)
 
@@ -28,7 +32,7 @@ class Updater(Tk):
         self.title('Sounder updater')
         self.resizable(False, False)
         self.protocol('WM_DELETE_WINDOW', self.exit_app)
-        self.bind('<F12>', lambda _: Debugger(self))
+        # self.bind('<F12>', lambda _: Debugger(self))
         self.init_logging()
         if self.self_update():
             self.exit_app()
@@ -37,15 +41,15 @@ class Updater(Tk):
             self.load_icons()
             self.init_ui()
             Thread(target=self.animation, daemon=True).start()
-            if self.get_args():
-                if self.get_version():
+            if self.get_version():
+                if self.get_args():
                     if self.compare_version():
                         self.update_panel.lift()
-                        self.update(False)
+                        Thread(target=self.update, daemon=True).start()
                     else:
                         self.reinstall_panel.lift()
-            else:
-                self.reinstall_panel.lift()
+                else:
+                    self.reinstall_panel.lift()
 
     def exit_app(self) -> None:
         self.destroy()
@@ -86,31 +90,29 @@ class Updater(Tk):
         init_panel.place(x=0, y=0, relwidth=1, relheight=1)
         # reinstall panel
         self.reinstall_panel: ttk.Frame = ttk.Frame(self)
-        ttk.Label(self.reinstall_panel, text='The latest version of Sounder is already installed.\nWould you like to reinstall it?').pack(side='top', pady=(10, 5))
+        ttk.Label(self.reinstall_panel, text='The latest version of Sounder is already installed.\nWould you like to reinstall it?').pack(side='top', pady=(10, 5), padx=5)
         reinstall_buttons: ttk.Frame = ttk.Frame(self.reinstall_panel)
-        ttk.Button(reinstall_buttons, text='Reinstall', command=lambda: self.update(True)).pack(side='left', anchor='c', pady=(0, 5), padx=(10, 5))
+        ttk.Button(reinstall_buttons, text='Reinstall', command=lambda: Thread(target=self.update, daemon=True).start()).pack(side='left', anchor='c', pady=(0, 5), padx=(10, 5))
         ttk.Button(reinstall_buttons, text='Exit', command=self.exit_app).pack(side='right', anchor='c', pady=(0, 5), padx=(5, 10))
         reinstall_buttons.pack(side='bottom', pady=(0, 10))
         self.reinstall_panel.place(x=0, y=0, relwidth=1, relheight=1)
         # update panel
         self.update_panel: ttk.Frame = ttk.Frame(self)
-
         # update label
-        self.progress_label: ttk.Label = ttk.Label(self.update_panel, text='Updating 0%', image=self.icons['setup'], anchor='center', style='second.TLabel', compound='top')
-
-        # progress bar
-        self.progress: ttk.Progressbar = ttk.Progressbar(self.update_panel, mode='indeterminate')
-        # self.progress.start(8)
-        self.progress.pack(fill='x', side='bottom')
+        self.progress_label: ttk.Label = ttk.Label(self.update_panel, text='Checking', image=self.icons['setup'], anchor='center', style='second.TLabel', compound='top')
         self.progress_label.pack(fil='both', side='top', expand=True)
         self.update_panel.place(x=0, y=0, relwidth=1, relheight=1)
-
+        # finish panel
+        self.finish_panel: ttk.Frame = ttk.Frame(self)
+        ttk.Label(self.finish_panel, image=self.icons['checkmark'], text='All done!', compound='top').pack(side='top', pady=(10, 5), padx=5)
+        finish_buttons: ttk.Frame = ttk.Frame(self.finish_panel)
+        ttk.Button(finish_buttons, text='Exit', command=self.exit_app).pack(side='right', anchor='c', pady=(0, 5), padx=(5, 10))
+        finish_buttons.pack(side='bottom', pady=(0, 10))
+        self.finish_panel.place(x=0, y=0, relwidth=1, relheight=1)
         # show init window
         init_panel.lift()
-
         # show window
         self.deiconify()
-
 
     def init_theme(self) -> None:
         # layout
@@ -123,7 +125,7 @@ class Updater(Tk):
         self.configure(background='#212121')
         # label
         self.layout.configure('TLabel', background='#212121', font=('catamaran 13 bold'), foreground='#fff', anchor='c')
-        self.layout.configure('second.TLabel', font=('catamaran 20 bold'))
+        self.layout.configure('second.TLabel', font=('catamaran 16 bold'))
         # panel
         self.layout.configure('TFrame', background='#212121')
         # button
@@ -136,7 +138,8 @@ class Updater(Tk):
         self.icons: dict = {
             'setup': ImageTk.PhotoImage(Image.open(r'Resources\\Icons\\Updater\\setup.png').resize((75, 75))),
             'error': ImageTk.PhotoImage(Image.open(r'Resources\\Icons\\Updater\\error.png').resize((50, 50))),
-            'cat': Image.open(r'Resources\\Icons\\Updater\\cat.gif')
+            'checkmark': ImageTk.PhotoImage(Image.open(r'Resources\\Icons\\Updater\\checkmark.png').resize((40, 40))),
+            'loading': Image.open(r'Resources\\Icons\\Updater\\loading.gif')
         }
         self.iconphoto(False, self.icons['setup'])
 
@@ -149,8 +152,7 @@ class Updater(Tk):
 
     def get_version(self) -> bool:
         try:
-            # self.server_version: str = get('https://raw.githubusercontent.com/losek1/Sounder5/master/updates/version.txt').text
-            self.server_version: str = '3.1.0'
+            self.server_version: str = get('https://raw.githubusercontent.com/losek1/Sounder5/master/updates/version.txt').text
             return True
         except Exception as err_obj:
             self.log(err_obj, 'Unable to connect to server!')
@@ -168,141 +170,105 @@ class Updater(Tk):
             if process.name() == "Sounder5.exe":
                 process.kill()
 
-    def update(self, ignore_version: bool = False) -> None:
-        self.update_panel.lift()
-        self.kill_sounder()
+    def check_package(self) -> bool:
+        self.update_package = get('https://raw.githubusercontent.com/losek1/Sounder5/master/updates/package.zip', stream=True)
+        if self.update_package.status_code == 200:
+            return True
+        return False
 
+    def get_package(self) -> bool:
+        self.progress_label['text'] = 'Downloading 0%'
+        bytes_downloaded: float = 0
+        package_size: int = int(self.update_package.headers.get('Content-Length'))
+        update_zip: bytes = b''
+        for package in self.update_package.iter_content(chunk_size=8192):
+            if package:
+                update_zip += package
+                bytes_downloaded += 8192
+                self.progress_label['text'] = f'Downloading {int((bytes_downloaded * 100) / package_size)}%'
+                sleep(0.001)
+        self.progress_label['text'] = 'Verifying update'
+        if self.verify_package(update_zip):
+            del bytes_downloaded, package_size, self.update_package
+            self.progress_label['text'] = 'Closing instances'
+            self.kill_sounder()
+            self.progress_label['text'] = 'Applying update 0%'
+            with ZipFile(BytesIO(update_zip)) as zip_file:
+                update_files = zip_file.namelist()
+                files_to_update: int = len(update_files)
+                for file in update_files:
+                    self.progress_label['text'] = f'Applying update {int((update_files.index(file) * 100) / files_to_update)}%'
+                    if 'Resources/Settings/' in file:
+                        continue
+                    try:
+                        zip_file.extract(file, r'.')
+                    except Exception as err_obj:
+                        self.log(err_obj, 'Unabe to apply update!')
+            self.update_history()
+            self.after_update()
+            self.progress_label['text'] = 'Applying update 100%'
+            self.finish_panel.lift()
+        else:
+            self.err_label['text'] = 'Unable to verify update!'
+            self.err_panel.lift()
 
+    def verify_package(self, package_bytes: bytes) -> bool:
+        try:
+            server_hash: str = get('https://raw.githubusercontent.com/losek1/Sounder5/master/updates/hash.txt').text
+        except Exception as err_obj:
+            self.log(err_obj, 'Unable to connect to server!')
+            return False
+        package_hash: str = sha256(package_bytes).hexdigest()
+        if package_hash == server_hash:
+            return True
+        return False
 
-        print('update', ignore_version)
+    def update(self) -> None:
+        try:
+            self.update_panel.lift()
+            if self.check_package():
+                self.get_package()
+            else:
+                self.progress_label['text'] = ''
+                self.err_label['text'] = 'Unable to download update'
+                self.err_panel.lift()
+        except Exception as err_obj:
+            self.log(err_obj, 'Something went wrong!')
 
     def animation(self) -> None:
         image_frames: list = []
-        for frame in ImageSequence.Iterator(self.icons['cat']):
+        for frame in ImageSequence.Iterator(self.icons['loading']):
             image_frames.append(ImageTk.PhotoImage(frame.copy().convert('RGBA').resize((48, 48))))
         if len(image_frames) > 1:
             while True:
                 for frame in image_frames:
                     self.progress_label.configure(image=frame)
-                    sleep(0.02)
+                    sleep(0.025)
         else:
             self.progress_label.configure(image=image_frames)  
 
-# class Updater:
-#     def __init__(self) -> None:
-#         # check if newer updater is available
-#         if not self.self_update():
-#             self.init_logging()
-#             self.init_ui()
-#             if self.get_args():
-#                 if self.get_version():
-#                     if self.compare_version():
-#                         self.kill_sounder()
-#                         while not self.gui.window.winfo_ismapped(): 
-#                             sleep(1)
-#                         self.gui.update_panel.lift()
-#                         if self.prepare_update():
-#                             self.update()
-#                     else:
-#                         print('UP TO DATE')
-#                 else:
-#                     print('ERROR')
-                
-#             else:
-#                 print('MODIFY MODE')
+    def update_history(self) -> None:
+        # read history
+        if isfile(r'Resources\\Settings\\Updates.json'):
+            with open(r'Resources\\Settings\\Updates.json', 'r') as data:
+                try:
+                    updates_history: dict = load(data)
+                except JSONDecodeError as _:
+                    updates_history: dict = {'Updates': []}
+            # append package to history
+            updates_history['Updates'].append({'Version': self.server_version, 'Date': strftime('%d-%m-%Y')})
+            # save new history
+        else:
+            updates_history: dict = {'Updates': [{'Version': self.server_version, 'Date': strftime('%d-%m-%Y')}]}
+        with open(r'Resources\\Settings\\Updates.json', 'w') as data:
+            try:
+                dump(updates_history, data)
+            except Exception as _:
+                pass
 
-
-#     def log(self, err_obj, err_text: str = '') -> None:
-#         # DING!!!!!!
-#         self.gui.window.bell()
-#         if err_text:
-#             self.gui.err_label['text'] = err_text
-#         else:
-#             self.gui.err_label['text'] = format_exc().split("\n")[-2]
-#         self.gui.error_panel.lift()
-#         # log error to file
-#         error(err_obj, exc_info=True)
-
-
-#     def kill_sounder(self) -> None:
-#         for process in process_iter():
-#             if process.name() == "Sounder5.exe":
-#                 process.kill()
-    
-
-#     def update(self) -> None:
-#         try:
-#             chunk_size: int = 4096
-#             bytes_downloaded: float = 0
-#             server_zip = get(f'https://github.com/losek1/Sounder3/releases/download/v{self.server_version}/package.zip', stream=True)
-#             if server_zip.status_code == 200:
-#                 for chunk in server_zip.iter_content(chunk_size=chunk_size):
-#                     if chunk:
-#                         bytes_downloaded += chunk_size
-#                         print(bytes_downloaded)
-                    
-#             else:
-#                 raise Exception('Unable to connect to server!')
-#         except Exception as err_obj:
-#             self.log(err_obj)
-
-
-# class Updater_Gui(Thread):
-#     def __init__(self) -> None:
-#         Thread.__init__(self)
-#         self.start()
-
-#     def load_icons(self) -> None:
-#         self.icons: dict = {
-#             'logo': ImageTk.PhotoImage(Image.open('Resources\\Icons\\Dark\\logo.png').resize((25, 25))),
-#             'checkmark': ImageTk.PhotoImage(Image.open('Resources\\Icons\\Dark\\checkmark.png').resize((25, 25))),
-#             'delete': ImageTk.PhotoImage(Image.open('Resources\\Icons\\Dark\\delete.png').resize((25, 25))),
-#         }
-#         self.window.iconphoto(False, self.icons['logo'])
-
-#     def exit_app(self) -> None:
-#         self.window.quit()
-
-#     def on_exit(self, func) -> None:
-#         self.window.protocol('WM_DELETE_WINDOW', func)
-
-#     def run(self) -> None:
-#         self.window = Tk()
-#         # hide window
-#         self.window.withdraw()
-#         # configure window
-#         self.window.geometry(f'400x150+{int((self.window.winfo_screenwidth() / 2) - 200)}+{int((self.window.winfo_screenheight() / 2) - 150)}')
-#         self.window.resizable(False, False)
-#         self.window.title('Sounder updater')
-#         self.window.protocol('WM_DELETE_WINDOW', self.exit_app)
-#         self.window.bind('<F12>', lambda _: Debugger(self.window))
-#         # load icons
-#         self.load_icons()
-#         # panels
-#         # error panel
-#         self.error_panel = ttk.Frame(self.window, style='second.TFrame')
-#         self.err_label = ttk.Label(self.error_panel, text='We are unable to display the error message!', wraplength=380)
-#         self.err_label.pack(side='top', fill='x', expand=True, padx=10, pady=(10, 0), anchor='c')
-#         ttk.Button(self.error_panel, text='Exit', command=self.exit_app).pack(side='bottom', pady=(0, 10), anchor='c')
-#         self.error_panel.place(x=0, y=0, relwidth=1, relheight=1)
-#         # init panel
-#         init_panel = ttk.Frame(self.window, style='second.TFrame')
-#         ttk.Label(init_panel, image=self.icons['logo'], text='Sounder updater', compound='left').pack(side='top', fill='x', expand=True, padx=10, anchor='c')
-#         init_panel.place(x=0, y=0, relwidth=1, relheight=1)
-#         # update panel
-#         self.update_panel = ttk.Frame(self.window, style='second.TFrame')
-
-
-
-
-#         self.update_panel.place(x=0, y=0, relwidth=1, relheight=1)
-
-
-#         # show window
-#         init_panel.lift()
-#         self.window.deiconify()
-#         self.window.mainloop()
-
+    def after_update(self) -> None:
+        if isfile('Sounder5.exe'):
+            startfile('Sounder5.exe')
 
 if __name__ == '__main__':
     Updater().mainloop()

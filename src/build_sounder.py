@@ -9,7 +9,7 @@ current_dir = getcwd()
 
 # prepare files to minify
 
-files_to_minify: tuple = ('Sounder5.py', 'Updater.py', 'Components\\Setup.py', 'Components\\SongMenu.py', 'Components\\SystemTheme.py')
+files_to_minify: tuple = ('Sounder5.py', 'Updater.py', 'Components\\Setup.py', 'Components\\SongMenu.py', 'Components\\SystemTheme.py', 'Components\\DirWatcher.py')
 
 # prepare folder for minified files
 if not exists('build'):

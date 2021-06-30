@@ -1,6 +1,7 @@
 Changelog:
 + Added proper update screen!
 + Added updater yassssss.
-+ Added update history
++ Added update history.
+~ Sounder will now monitor music folders for any changes.
 ~ Some small code tweaks ;)
-*We are getting somewhere
+*We are getting somewhere!

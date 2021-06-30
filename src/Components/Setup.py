@@ -2,8 +2,8 @@ try:
     from tkinter import Toplevel, ttk, Canvas, StringVar, BooleanVar
     from tkinter.filedialog import askdirectory, askopenfilename
     from typing import ClassVar
-    from Components.Debugger import Debugger
-    from os.path import isfile, join, isdir, basename, abspath, join
+    # from Components.Debugger import Debugger
+    from os.path import basename, abspath, join
     from time import sleep
     from PIL import Image, ImageTk
     from threading import Thread
@@ -27,7 +27,7 @@ class SSetup(Toplevel):
         self.resizable(False, False)
         self.title('Sounder configurator')
         self.protocol('WM_DELETE_WINDOW', self.exit_app)
-        self.bind('<F12>', lambda _: Debugger(self))
+        # self.bind('<F12>', lambda _: Debugger(self))
         # init layout
         self.init_layout()
         # load icons
