@@ -198,7 +198,7 @@ class Updater(Tk):
                 files_to_update: int = len(update_files)
                 for file in update_files:
                     self.progress_label['text'] = f'Applying update {int((update_files.index(file) * 100) / files_to_update)}%'
-                    if 'Resources/Settings/' in file:
+                    if ('Resources/Settings/', 'Updater.exe') in file:
                         continue
                     try:
                         zip_file.extract(file, r'.')
@@ -248,18 +248,17 @@ class Updater(Tk):
             self.progress_label.configure(image=image_frames)  
 
     def update_history(self) -> None:
+        updates_history: dict = {}
         # read history
         if isfile(r'Resources\\Settings\\Updates.json'):
             with open(r'Resources\\Settings\\Updates.json', 'r') as data:
                 try:
-                    updates_history: dict = load(data)
+                    updates_history = load(data)
                 except JSONDecodeError as _:
-                    updates_history: dict = {'Updates': []}
-            # append package to history
-            updates_history['Updates'].append({'Version': self.server_version, 'Date': strftime('%d-%m-%Y')})
-            # save new history
+                    updates_history = {'Updates': [{'Version': self.server_version, 'Date': strftime('%d-%m-%Y')}]}
         else:
-            updates_history: dict = {'Updates': [{'Version': self.server_version, 'Date': strftime('%d-%m-%Y')}]}
+            updates_history['Updates'].append({'Version': self.server_version, 'Date': strftime('%d-%m-%Y')})
+        # update history
         with open(r'Resources\\Settings\\Updates.json', 'w') as data:
             try:
                 dump(updates_history, data)

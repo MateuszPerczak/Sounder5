@@ -1,2 +1,5 @@
 Changelog:
-~ Fixed bug that caused sounder to crash when trying to load update history.
+~ Changed some icons.
+~ Fixed updater issues.
+- Removed some old legacy stuff.
+*Yay :D

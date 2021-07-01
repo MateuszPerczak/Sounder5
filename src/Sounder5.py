@@ -1,9 +1,9 @@
 try:
-    from tkinter import Tk, ttk, StringVar, BooleanVar, DoubleVar, Canvas, Event, Toplevel, IntVar
+    from tkinter import Tk, ttk, StringVar, BooleanVar, DoubleVar, Canvas, Event, IntVar
     from tkinter.filedialog import askdirectory, askopenfilename, asksaveasfile
     from tkinter.messagebox import askyesno
     from os.path import isfile, join, isdir, basename, abspath, join, splitext, dirname, exists
-    from os import startfile, listdir, walk, getpid# getcwd, listdir, startfile, remove
+    from os import startfile, listdir, walk, getpid
     from json import load, dump
     from json.decoder import JSONDecodeError
     from logging import basicConfig, error
@@ -28,6 +28,7 @@ try:
     from win10toast import ToastNotifier
     from psutil import Process
     from typing import Union
+    from subprocess import call
 except ImportError as err:
     exit(err)
 
@@ -89,7 +90,7 @@ class Sounder(Tk):
             # variables
             default_settings: dict = {'delete_missing': False, 'follow': 1, 'crossfade': 100, 'shuffle': False, 'start_playback': False, 'playlist': 'Library', 'repeat': 'None', 'buffer': 'Normal', 'last_song': '', 'volume': 0.5, 'sort_by': 'A-Z', 'scan_subfolders': False, 'geometry': '800x500', 'wheel_acceleration': 1.0, 'updates': True, 'folders': [], 'use_system_theme': True, 'theme': 'Light', 'page': 'Library', 'playlists': {'Favorites': {'Name': 'Favorites', 'Songs': []}}}
             self.settings: dict = {}
-            self.version: tuple = ('0.7.3', '300621')
+            self.version: tuple = ('0.7.5', '010721')
             # load settings
             if isfile(r'Resources\\Settings\\Settings.json'):
                 with open(r'Resources\\Settings\\Settings.json', 'r') as data:
@@ -232,7 +233,6 @@ class Sounder(Tk):
             'user': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\user.png').resize((25, 25))),
             'icons8': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\icons8.png').resize((25, 25))),
             'code': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\code.png').resize((25, 25))),
-            'logo': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\logo.png').resize((25, 25))),
             'download': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\download.png').resize((25, 25))),
             'wheel': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\wheel.png').resize((25, 25))),
             'search': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\search.png').resize((25, 25))),
@@ -246,7 +246,7 @@ class Sounder(Tk):
             'puzzled': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\puzzled.png').resize((25, 25))),
             'package': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\package.png').resize((25, 25)))
             }
-        self.iconphoto(False, self.icons['logo'])
+        self.iconbitmap(fr'Resources\\Icons\\{self.settings["theme"]}\\icon.ico')
 
     def init_ui(self) -> None:
         # ui variables
@@ -400,7 +400,7 @@ class Sounder(Tk):
         ttk.Radiobutton(settings_updates, text='Yes', style='second.TRadiobutton', value=True, variable=self.updates, command=self.change_updates).pack(side='right', anchor='center')
         # about
         settings_about: ttk.Frame = ttk.Frame(self.player_content, style='second.TFrame')
-        ttk.Label(settings_about, image=self.icons['logo'], text='About Sounder', compound='left').pack(side='top', anchor='center', fill='x', padx=10, pady=10)
+        ttk.Label(settings_about, image=self.icons['info'], text='About Sounder', compound='left').pack(side='top', anchor='center', fill='x', padx=10, pady=10)
         ttk.Label(settings_about, image=self.icons['window'], text=f'Version: {self.version[0]} Build: {self.version[1]}', compound='left').pack(side='top', anchor='center', fill='x', padx=10, pady=(0, 10))
         ttk.Label(settings_about, image=self.icons['user'], text='Author: Mateusz Perczak', compound='left').pack(side='top', anchor='center', fill='x', padx=10, pady=(0, 10))
         ttk.Label(settings_about, image=self.icons['icons8'], text='Icons: Icons8', compound='left').pack(side='top', anchor='center', fill='x', padx=10, pady=(0, 10))
@@ -947,7 +947,7 @@ class Sounder(Tk):
 
     def do_update(self) -> None:
         if isfile('Updater.exe'):
-            startfile(f'Updater.exe {self.version[0]}')
+            call(['Updater.exe', self.version[0]])
 
     def change_playback(self) -> None:
         self.settings['start_playback'] = self.start_playback.get()
