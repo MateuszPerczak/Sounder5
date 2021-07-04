@@ -27,7 +27,7 @@ try:
     from win10toast import ToastNotifier
     from psutil import Process
     from typing import Union
-    from subprocess import call
+    import ctypes
 except ImportError as err:
     exit(err)
 
@@ -968,8 +968,11 @@ class Sounder(Tk):
         self.show_panel()
 
     def do_update(self) -> None:
-        if isfile('Updater.exe'):
-            call(['Updater.exe', self.version[0]])
+        try:
+            if isfile('Updater.exe'):
+                ctypes.windll.shell32.ShellExecuteW(None, "runas", 'Updater.exe', self.version[0], None, 1)
+        except Exception as err_obj:
+            self.log(err_obj)
 
     def change_playback(self) -> None:
         self.settings['start_playback'] = self.start_playback.get()
