@@ -21,7 +21,6 @@ try:
 except ImportError as err:
     exit(err)
 
-
 class Updater(Tk):
     def __init__(self) -> None:
         super().__init__()
@@ -57,7 +56,7 @@ class Updater(Tk):
 
     def init_logging(self) -> None:
         # logging error messages
-        basicConfig(filename=f'Resources\\Dumps\\dump.txt', level=40)
+        basicConfig(filename=f'Resources\\Dumps\\updater_dump.txt', level=40)
 
     def log(self, err_obj, err_text: str) -> None:
         # DING!!!!!!
@@ -198,10 +197,10 @@ class Updater(Tk):
                 files_to_update: int = len(update_files)
                 for file in update_files:
                     self.progress_label['text'] = f'Applying update {int((update_files.index(file) * 100) / files_to_update)}%'
-                    if file.find('Resources/Settings/') or file == 'Updater.exe':
+                    if file in ('Updater.exe', 'Settings.json', 'Updates.json', 'updater_dump.txt', 'sounder_dump.txt'):
                         continue
                     try:
-                        zip_file.extract(file, r'./')
+                        zip_file.extract(file)
                     except Exception as err_obj:
                         self.log(err_obj, 'Unabe to apply update!')
             self.progress_label['text'] = 'Registering update 0%'
@@ -210,9 +209,6 @@ class Updater(Tk):
             sleep(0.5)
             self.progress_label['text'] = 'Applying update 100%'
             self.finish_panel.lift()
-            sleep(2)
-            self.progress_label['text'] = 'Launching Sounder'
-            sleep(0.5)
             self.after_update()
         else:
             self.err_label['text'] = 'Unable to verify update!'

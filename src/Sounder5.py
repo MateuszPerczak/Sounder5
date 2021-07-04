@@ -74,7 +74,7 @@ class Sounder(Tk):
 
     def init_logging(self) -> None:
         # logging error messages
-        basicConfig(filename=fr'Resources\\Dumps\\dump.txt', level=40)
+        basicConfig(filename=fr'Resources\\Dumps\\sounder_dump.txt', level=40)
         self.process = Process(getpid())
 
     def log(self, err_obj) -> None:
@@ -658,7 +658,7 @@ class Sounder(Tk):
         self.last_panel = panel
 
     def open_logs(self) -> None:
-        if isfile(r'Resources\\Dumps\\dump.txt'): startfile(r'Resources\\Dumps\\dump.txt')
+        if isfile(r'Resources\\Dumps\\sounder_dump.txt'): startfile(r'Resources\\Dumps\\sounder_dump.txt')
 
     def on_wheel(self, event: Event) -> None:
         self.player_canvas.yview_scroll(int(-self.settings['wheel_acceleration']*(event.delta/120)), 'units')
