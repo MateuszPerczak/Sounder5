@@ -152,7 +152,7 @@ class Updater(Tk):
 
     def get_version(self) -> bool:
         try:
-            self.server_version: str = get('https://raw.githubusercontent.com/losek1/Sounder5/master/updates/version.txt').text
+            self.server_version: str = get('https://raw.githubusercontent.com/losek1/Sounder5/master/updates/version.txt').text.strip()
             return True
         except Exception as err_obj:
             self.log(err_obj, 'Unable to connect to server!')
@@ -198,28 +198,34 @@ class Updater(Tk):
                 files_to_update: int = len(update_files)
                 for file in update_files:
                     self.progress_label['text'] = f'Applying update {int((update_files.index(file) * 100) / files_to_update)}%'
-                    if ('Resources/Settings/', 'Updater.exe') in file:
+                    if file.find('Resources/Settings/') or file == 'Updater.exe':
                         continue
                     try:
-                        zip_file.extract(file, r'.')
+                        zip_file.extract(file, r'./')
                     except Exception as err_obj:
                         self.log(err_obj, 'Unabe to apply update!')
+            self.progress_label['text'] = 'Registering update 0%'
             self.update_history()
-            self.after_update()
+            self.progress_label['text'] = 'Registering update 100%'
+            sleep(0.5)
             self.progress_label['text'] = 'Applying update 100%'
             self.finish_panel.lift()
+            sleep(2)
+            self.progress_label['text'] = 'Launching Sounder'
+            sleep(0.5)
+            self.after_update()
         else:
             self.err_label['text'] = 'Unable to verify update!'
             self.err_panel.lift()
 
     def verify_package(self, package_bytes: bytes) -> bool:
         try:
-            server_hash: str = get('https://raw.githubusercontent.com/losek1/Sounder5/master/updates/hash.txt').text
+            self.server_hash: str = get('https://raw.githubusercontent.com/losek1/Sounder5/master/updates/hash.txt').text.strip()
         except Exception as err_obj:
             self.log(err_obj, 'Unable to connect to server!')
             return False
         package_hash: str = sha256(package_bytes).hexdigest()
-        if package_hash == server_hash:
+        if package_hash == self.server_hash:
             return True
         return False
 
@@ -248,16 +254,16 @@ class Updater(Tk):
             self.progress_label.configure(image=image_frames)  
 
     def update_history(self) -> None:
-        updates_history: dict = {}
+        updates_history: dict = {'Updates': []}
         # read history
         if isfile(r'Resources\\Settings\\Updates.json'):
             with open(r'Resources\\Settings\\Updates.json', 'r') as data:
                 try:
                     updates_history = load(data)
                 except JSONDecodeError as _:
-                    updates_history = {'Updates': [{'Version': self.server_version, 'Date': strftime('%d-%m-%Y')}]}
+                    updates_history = {'Updates': [{'Version': self.server_version, 'Date': strftime('%d-%m-%Y'), 'Hash': self.server_hash}]}
         else:
-            updates_history['Updates'].append({'Version': self.server_version, 'Date': strftime('%d-%m-%Y')})
+            updates_history['Updates'].append({'Version': self.server_version, 'Date': strftime('%d-%m-%Y'), 'Hash': self.server_hash})
         # update history
         with open(r'Resources\\Settings\\Updates.json', 'w') as data:
             try:

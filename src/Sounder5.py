@@ -14,7 +14,6 @@ try:
     from string import ascii_uppercase, digits
     from Components.SystemTheme import get_theme
     # from Components.Debugger import Debugger
-    from Components.Setup import SSetup
     from Components.SongMenu import SongMenu
     from Components.DirWatcher import DirWatcher
     from requests import get
@@ -45,7 +44,7 @@ class Sounder(Tk):
         self.title('Sounder')
         self.protocol('WM_DELETE_WINDOW', self.exit_app)
         # self.bind('<F12>', lambda _: Debugger(self))
-        # self.attributes('-alpha', 0.8)
+        # self.attributes('-alpha', 0.9)
         # init notifications
         self.init_notifications()
         # init settings
@@ -57,12 +56,21 @@ class Sounder(Tk):
         self.load_icons()
         # init theme
         self.apply_theme()
+        # init screen
+        self.deiconify()
+        self.init_screen()
+        self.update_idletasks()
         # init ui
         self.init_ui()
         # init player
         self.init_player()
-        # show window
-        self.deiconify()
+        # show main panel
+        self.after(70, lambda: self.player_panel.lift())
+
+    def init_screen(self) -> None:
+        init_panel: ttk.Frame = ttk.Frame(self, style='second.TFrame')
+        ttk.Label(init_panel, image=self.icons['logo']).place(relx=.5, rely=.5, anchor='center')
+        init_panel.place(x=0, y=0, relwidth=1, relheight=1)
 
     def init_logging(self) -> None:
         # logging error messages
@@ -90,7 +98,7 @@ class Sounder(Tk):
             # variables
             default_settings: dict = {'delete_missing': False, 'follow': 1, 'crossfade': 100, 'shuffle': False, 'start_playback': False, 'playlist': 'Library', 'repeat': 'None', 'buffer': 'Normal', 'last_song': '', 'volume': 0.5, 'sort_by': 'A-Z', 'scan_subfolders': False, 'geometry': '800x500', 'wheel_acceleration': 1.0, 'updates': True, 'folders': [], 'use_system_theme': True, 'theme': 'Light', 'page': 'Library', 'playlists': {'Favorites': {'Name': 'Favorites', 'Songs': []}}}
             self.settings: dict = {}
-            self.version: tuple = ('0.7.5', '010721')
+            self.version: tuple = ('0.7.6', '040721')
             # load settings
             if isfile(r'Resources\\Settings\\Settings.json'):
                 with open(r'Resources\\Settings\\Settings.json', 'r') as data:
@@ -101,6 +109,7 @@ class Sounder(Tk):
             else:
                 self.settings = default_settings
                 # open sounder configurator
+                from Components.Setup import SSetup
                 SSetup(self, self.settings).mainloop()  
             # verify settings
             for key in default_settings:
@@ -244,7 +253,9 @@ class Sounder(Tk):
             'time': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\time.png').resize((25, 25))),
             'sort': (ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\no_sort.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\normal_sort.png').resize((25, 25))), ImageTk.PhotoImage(Image.open(f'Resources\\Icons\\{self.settings["theme"]}\\reversed_sort.png').resize((25, 25)))),
             'puzzled': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\puzzled.png').resize((25, 25))),
-            'package': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\package.png').resize((25, 25)))
+            'package': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\package.png').resize((25, 25))),
+            'shield': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\shield.png').resize((25, 25))),
+            'logo': ImageTk.PhotoImage(Image.open(fr'Resources\\Icons\\{self.settings["theme"]}\\logo.png').resize((100, 100)))
             }
         self.iconbitmap(fr'Resources\\Icons\\{self.settings["theme"]}\\icon.ico')
 
@@ -395,9 +406,9 @@ class Sounder(Tk):
         ttk.Label(settings_acceleration, text='Slow').pack(side='right', anchor='center', fill='y', pady=10, padx=10)
         # updates
         settings_updates: ttk.Frame = ttk.Frame(self.player_content, style='second.TFrame')
-        ttk.Label(settings_updates, image=self.icons['download'], text='Check for updates', compound='left').pack(side='left', anchor='center', fill='y', pady=10, padx=10)
-        ttk.Radiobutton(settings_updates, text='No', style='second.TRadiobutton', value=False, variable=self.updates, command=self.change_updates).pack(side='right', anchor='center', padx=(10, 10))
-        ttk.Radiobutton(settings_updates, text='Yes', style='second.TRadiobutton', value=True, variable=self.updates, command=self.change_updates).pack(side='right', anchor='center')
+        ttk.Label(settings_updates, image=self.icons['download'], text='Check for updates', compound='left').pack(side='left', anchor='center', fill='y', pady=10, padx=(10, 0))
+        ttk.Radiobutton(settings_updates, text='No', style='second.TRadiobutton', value=False, variable=self.updates, command=self.change_updates).pack(side='right', anchor='center', padx=10, pady=10)
+        ttk.Radiobutton(settings_updates, text='Yes', style='second.TRadiobutton', value=True, variable=self.updates, command=self.change_updates).pack(side='right', anchor='center', pady=10)
         # about
         settings_about: ttk.Frame = ttk.Frame(self.player_content, style='second.TFrame')
         ttk.Label(settings_about, image=self.icons['info'], text='About Sounder', compound='left').pack(side='top', anchor='center', fill='x', padx=10, pady=10)
@@ -425,9 +436,9 @@ class Sounder(Tk):
         ttk.Label(settings_buffer, image=self.icons['info'], text='Note: You need to restart the application to see any changes!', compound='left').pack(side='top', fill='x', padx=10, pady=(0, 10))
         # startup
         settings_startup: ttk.Frame = ttk.Frame(self.player_content, style='second.TFrame')
-        ttk.Label(settings_startup, image=self.icons['power'], text='On startup', compound='left').pack(side='left', anchor='center', fill='y', pady=10, padx=10)
-        ttk.Radiobutton(settings_startup, text='Do nothing', style='fourth.TRadiobutton', value=False, variable=self.start_playback, command=self.change_playback).pack(side='right', anchor='center', padx=(0, 10))
-        ttk.Radiobutton(settings_startup, text='Start playback', style='fourth.TRadiobutton', value=True, variable=self.start_playback, command=self.change_playback).pack(side='right', anchor='center', padx=(0, 10))
+        ttk.Label(settings_startup, image=self.icons['power'], text='On startup', compound='left').pack(side='left', anchor='center', fill='y', padx=10)
+        ttk.Radiobutton(settings_startup, text='Do nothing', style='fourth.TRadiobutton', value=False, variable=self.start_playback, command=self.change_playback).pack(side='right', anchor='center', padx=(0, 10), pady=10)
+        ttk.Radiobutton(settings_startup, text='Start playback', style='fourth.TRadiobutton', value=True, variable=self.start_playback, command=self.change_playback).pack(side='right', anchor='center', padx=(0, 10), pady=10)
         # crossfade
         settings_crossfade: ttk.Frame = ttk.Frame(self.player_content, style='second.TFrame')
         crossfade_panel: ttk.Frame = ttk.Frame(settings_crossfade, style='second.TFrame')
@@ -456,9 +467,9 @@ class Sounder(Tk):
         ttk.Label(settings_missing_song, image=self.icons['info'], text='Note: Sounder will delete all missing songs from all playlists!', compound='left').pack(side='top', fill='x', padx=10, pady=(0, 10))        
         # export playlists
         settings_export: ttk.Frame = ttk.Frame(self.player_content, style='second.TFrame')
-        ttk.Label(settings_export, image=self.icons['restore'], text='Export/Import settings', compound='left').pack(side='left', anchor='center', fill='y', pady=10, padx=10)
-        ttk.Button(settings_export, text='Export', style='third.TButton', command=self.export_settings).pack(side='right', anchor='center', padx=(0, 10))
-        ttk.Button(settings_export, text='Import', style='third.TButton', command=self.import_settings).pack(side='right', anchor='center', padx=(0, 10))
+        ttk.Label(settings_export, image=self.icons['restore'], text='Export/Import settings', compound='left').pack(side='left', anchor='center', fill='y', padx=10)
+        ttk.Button(settings_export, text='Export', style='third.TButton', command=self.export_settings).pack(side='right', anchor='center', padx=(0, 10), pady=10)
+        ttk.Button(settings_export, text='Import', style='third.TButton', command=self.import_settings).pack(side='right', anchor='center', padx=(0, 10), pady=10)
         # panels variable
         self.settings_panels = (ttk.Label(self.player_content, text=' User interface', style='third.TLabel'), settings_acceleration, settings_theme, ttk.Label(self.player_content, text=' Playback', style='third.TLabel'), settings_startup, settings_crossfade, settings_buffer, ttk.Label(self.player_content, text=' Songs', style='third.TLabel'), settings_active_song, settings_missing_song, ttk.Label(self.player_content, text=' Folders', style='third.TLabel'), settings_subfolders, ttk.Label(self.player_content, text=' Other', style='third.TLabel'), settings_updates, settings_export, settings_about)
         # bottom panel
@@ -493,6 +504,7 @@ class Sounder(Tk):
         volume_panel.place(relx=1, y=10, relwidth=0.22, height=48, anchor='ne')
         player_bot_panel.pack(side='top', fill='x', ipady=45)
         self.player_panel.place(x=0, y=0, relwidth=1, relheight=1)
+        self.player_panel.lower()
         # left frame
         info_panel: ttk.Frame = ttk.Frame(player_bot_panel, style='second.TFrame')
         self.song_album: ttk.Label = ttk.Label(info_panel)
@@ -529,8 +541,7 @@ class Sounder(Tk):
         error_content.place(relx=.5, rely=.5, anchor='center')
         ttk.Label(self.error_panel, text=f'version: {self.version[0]} [build: {self.version[1]}]', style='third.TLabel').pack(side='bottom', anchor='w', padx=10, pady=5)
         self.error_panel.place(x=0, y=0, relwidth=1, relheight=1)
-        # show main panel
-        self.player_panel.lift()
+        self.error_panel.lower()
         # info panels
         self.no_songs: ttk.Frame = ttk.Frame(self.player_content, style='second.TFrame')
         ttk.Label(self.no_songs, image=self.icons['info'], text='No songs found!', compound='left').pack(side='left', anchor='center', fill='y', pady=10, padx=10)
@@ -577,7 +588,7 @@ class Sounder(Tk):
                     if self.settings['delete_missing']:
                         self.settings['playlists'][playlist]['Songs'].remove(song)
                     else:
-                        self.add_missing_song(song, playlist)
+                        self.add_missing_song(song)
                 if playlist == visible_playlist:
                     self.song_panels[song].pack(side='top', fill='x', pady=5, padx=10)
                 
@@ -743,11 +754,12 @@ class Sounder(Tk):
                             if song not in self.library:
                                 self.settings['playlists'][playlist]['Songs'].remove(song)
                         else:
-                            self.add_missing_song(song, playlist)
+                            if song not in self.song_panels:
+                                self.add_missing_song(song)
         except Exception as err_obj:
             self.log(err_obj)
 
-    def add_missing_song(self, song: str, playlist: str) -> None:
+    def add_missing_song(self, song: str) -> None:
         try:
             self.song_panels[song] = ttk.Frame(self.player_content, style='second.TFrame')
             ttk.Label(self.song_panels[song], image=self.icons['puzzled']).pack(side='left', anchor='center', pady=10, padx=10)
@@ -755,9 +767,16 @@ class Sounder(Tk):
             ttk.Label(info_frame, text=basename(song), style='fifth.TLabel').place(x=5, y=5)
             ttk.Label(info_frame, text='Missing', style='sixth.TLabel').place(x=5, y=28)
             info_frame.pack(side='left', fill='both', expand=True)
-            ttk.Button(self.song_panels[song], image=self.icons['delete'], command=lambda: self.remove_song(song)).pack(side='right', anchor='center', fill='y', pady=10, padx=(0, 5))
+            ttk.Button(self.song_panels[song], image=self.icons['delete'], command=lambda: self.remove_missing_song(song)).pack(side='right', anchor='center', fill='y', pady=10, padx=(0, 5))
         except Exception as err_obj:
             self.log(err_obj)
+
+    def remove_missing_song(self, song: str) -> None:
+        playlist = self.menu_playlist.get()
+        self.settings['playlists'][playlist]['Songs'].remove(song)
+        self.song_panels[song].pack_forget()
+        if not self.settings['playlists'][playlist]['Songs']:
+            self.no_songs.pack(side='top', fill='x', pady=5, padx=10)
 
     def new_folder(self) -> None:
         new_dir: str = askdirectory()
@@ -868,7 +887,7 @@ class Sounder(Tk):
 
     def check_update(self) -> None:
         try:
-            server_version: str = get('https://raw.githubusercontent.com/losek1/Sounder5/master/updates/version.txt').text
+            server_version: str = get('https://raw.githubusercontent.com/losek1/Sounder5/master/updates/version.txt').text.strip()
             if server_version != self.version[0] and int(server_version.replace('.', '')) > int(self.version[0].replace('.', '')):
                 self.prepare_update_panel(server_version)
                 # show notification
@@ -904,9 +923,12 @@ class Sounder(Tk):
         updates_history['Updates'].reverse()
         for update in updates_history['Updates']:
             history_panel: ttk.Frame = ttk.Frame(self.player_content, style='second.TFrame')
-            ttk.Label(history_panel, image=self.icons['package'], text=f'Package {update["Version"]}', compound='left').pack(side='left', padx=10, pady=10)
-            ttk.Label(history_panel, image=self.icons['checkmark'], text='Applied ', compound='right').pack(side='right', padx=10, pady=10)
-            ttk.Label(history_panel, image=self.icons['clock'], text=f'{update["Date"]}', compound='right').pack(side='right', padx=10, pady=10)
+            package_panel: ttk.Frame = ttk.Frame(history_panel, style='second.TFrame')
+            ttk.Label(package_panel, image=self.icons['package'], text=f'Package {update["Version"]}', compound='left').pack(side='left')
+            ttk.Label(package_panel, image=self.icons['checkmark'], text='Applied ', compound='right').pack(side='right', padx=(10, 0))
+            ttk.Label(package_panel, image=self.icons['clock'], text=f'{update["Date"]}', compound='right').pack(side='right', padx=(0, 10))
+            package_panel.pack(fill='x', expand=True, padx=10, pady=(10, 0))
+            ttk.Label(history_panel, image=self.icons['shield'], text=f'{update["Hash"]}', compound='left').pack(side='top', pady=10, padx=10, fill='x')
             self.update_panels.append(history_panel)
 
     def prepare_update_panel(self, package_version: str) -> None:

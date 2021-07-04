@@ -124,7 +124,7 @@ class SongMenu(Toplevel):
             if self.song in self.parent.song_panels:
                 self.parent.song_panels[self.song].pack_forget()
             if not self.playlists[selected_playlist]['Songs']:
-                self.parent.search_panel.pack(side='top', fill='x', pady=5, padx=10)
+                self.parent.no_songs.pack(side='top', fill='x', pady=5, padx=10)
         self.hide()
 
     def add_to_playlist(self, playlist: str) -> None:

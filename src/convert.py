@@ -39,7 +39,7 @@ for file in listdir(to_path):
     else:
         remove(abspath(join(to_path, file)))
 # remove files list
-ignore_files: tuple = ('icon.ico')
+ignore_files: tuple = ('icon.ico', 'logo.png')
 # invert colors of icons
 for icon in files:
     printProgressBar(files.index(icon), len(files) - 1, prefix = 'Progress:', suffix = 'Complete', length = 50)

@@ -1,5 +1,11 @@
 Changelog:
++ Added loading screen.
++ Added verification to update history.
+~ Fixed UI paddings.
+~ Fixed remove function.
 ~ Changed some icons.
 ~ Fixed updater issues.
+~ Changed remove function.
+~ Changed chow sounder retrieves version info from the server.
 - Removed some old legacy stuff.
-*Yay :D
+*Boom ( ͡• ͜ʖ ͡• )
