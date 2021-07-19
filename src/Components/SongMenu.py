@@ -110,6 +110,7 @@ class SongMenu(Toplevel):
         if playlist in self.disabled_playlists:
             self.disabled_playlists.remove(playlist)
 
+
     def rename(self, playlist: str, name: str) -> None:
         self.playlist_panels[playlist]['text'] = name
 

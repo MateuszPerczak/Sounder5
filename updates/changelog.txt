@@ -1,11 +1,11 @@
 Changelog:
-+ Added loading screen.
-+ Added verification to update history.
-~ Fixed UI paddings.
-~ Fixed remove function.
-~ Changed some icons.
-~ Fixed updater issues.
-~ Changed remove function.
-~ Changed chow sounder retrieves version info from the server.
-- Removed some old legacy stuff.
-*Boom ( ͡• ͜ʖ ͡• )
++ You can now click on the progress bar to change song position! (Experimental)
++ Added setting for search spelling compensation.
+~ After double-clicking the name of a playlist, the playlist name will be automatically selected.
+~ Optimized sounder old functions with built-in ones!
+~ Changed search function to be more accurate and faster!
+~ Reduces the size of icons.
+~ Changed how sounder loads icons. (Should be a little quicker now)
+~ Move some functions to other threads!
+~ Added error catching to some of the functions. 
+- Removed some text from buttons!

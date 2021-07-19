@@ -1,11 +1,8 @@
 try:
-    from tkinter import Toplevel, ttk, Canvas, StringVar, BooleanVar
+    from tkinter import Toplevel, ttk, Canvas, StringVar, BooleanVar, PhotoImage
     from tkinter.filedialog import askdirectory, askopenfilename
-    from typing import ClassVar
-    # from Components.Debugger import Debugger
-    from os.path import basename, abspath, join
+    from os.path import basename, abspath
     from time import sleep
-    from PIL import Image, ImageTk
     from threading import Thread
     from json import load
     from json.decoder import JSONDecodeError
@@ -27,7 +24,6 @@ class SSetup(Toplevel):
         self.resizable(False, False)
         self.title('Sounder configurator')
         self.protocol('WM_DELETE_WINDOW', self.exit_app)
-        # self.bind('<F12>', lambda _: Debugger(self))
         # init layout
         self.init_layout()
         # load icons
@@ -137,13 +133,13 @@ class SSetup(Toplevel):
 
     def load_icons(self) -> None:
         self.icons: dict = {
-            'arrow': (ImageTk.PhotoImage(Image.open('Resources\\Icons\\Configurator\\left.png').resize((25, 25))), ImageTk.PhotoImage(Image.open('Resources\\Icons\\Dark\\right.png').resize((25, 25)))),
-            'logo': ImageTk.PhotoImage(Image.open('Resources\\Icons\\Configurator\\setup.png')),
-            'plus': ImageTk.PhotoImage(Image.open('Resources\\Icons\\Configurator\\plus.png').resize((25, 25))),
-            'folder': ImageTk.PhotoImage(Image.open('Resources\\Icons\\Configurator\\music_folder.png').resize((25, 25))),
-            'delete': ImageTk.PhotoImage(Image.open('Resources\\Icons\\Configurator\\delete.png').resize((25, 25))),
-            'brush': ImageTk.PhotoImage(Image.open('Resources\\Icons\\Configurator\\brush.png').resize((25, 25))),
-            'checkmark': ImageTk.PhotoImage(Image.open('Resources\\Icons\\Configurator\\checkmark.png').resize((25, 25))),
+            'arrow': (PhotoImage(file=r'Resources\\Icons\\Configurator\\left.png'), PhotoImage(file=r'Resources\\Icons\\Configurator\\right.png')),
+            'logo': PhotoImage(file=r'Resources\\Icons\\Configurator\\setup.png'),
+            'plus': PhotoImage(file=r'Resources\\Icons\\Configurator\\plus.png'),
+            'folder': PhotoImage(file=r'Resources\\Icons\\Configurator\\music_folder.png'),
+            'delete': PhotoImage(file=r'Resources\\Icons\\Configurator\\delete.png'),
+            'brush': PhotoImage(file=r'Resources\\Icons\\Configurator\\brush.png'),
+            'checkmark': PhotoImage(file=r'Resources\\Icons\\Configurator\\checkmark.png')
         }
         self.iconphoto(False, self.icons['logo'])
 

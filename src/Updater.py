@@ -1,5 +1,5 @@
 try:
-    from tkinter import Tk, ttk
+    from tkinter import Tk, ttk, PhotoImage
     from time import sleep
     from sys import argv
     from os import remove, rename, startfile
@@ -39,6 +39,7 @@ class Updater(Tk):
             self.init_theme()
             self.load_icons()
             self.init_ui()
+            self.update_idletasks()
             Thread(target=self.animation, daemon=True).start()
             if self.get_version():
                 if self.get_args():
@@ -135,9 +136,9 @@ class Updater(Tk):
 
     def load_icons(self) -> None:
         self.icons: dict = {
-            'setup': ImageTk.PhotoImage(Image.open(r'Resources\\Icons\\Updater\\setup.png').resize((75, 75))),
-            'error': ImageTk.PhotoImage(Image.open(r'Resources\\Icons\\Updater\\error.png').resize((50, 50))),
-            'checkmark': ImageTk.PhotoImage(Image.open(r'Resources\\Icons\\Updater\\checkmark.png').resize((40, 40))),
+            'setup': PhotoImage(file=r'Resources\\Icons\\Updater\\setup.png'),
+            'error': PhotoImage(file=r'Resources\\Icons\\Updater\\error.png'),
+            'checkmark': PhotoImage(file=r'Resources\\Icons\\Updater\\checkmark.png'),
             'loading': Image.open(r'Resources\\Icons\\Updater\\loading.gif')
         }
         self.iconphoto(False, self.icons['setup'])
