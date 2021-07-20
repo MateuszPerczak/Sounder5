@@ -402,10 +402,9 @@ class Sounder(Tk):
         player_content_scroll.configure(command=self.player_canvas.yview)
         # player content
         self.player_content: ttk.Frame = ttk.Frame(self.player_canvas)
-        # self.player_content.bind('<Expose>', lambda _: self.player_canvas.configure(scrollregion=self.player_canvas.bbox("all")))
-        self.player_content.bind('<Configure>', lambda _: self.refresh_canvas())
+        self.player_content.bind('<Expose>', lambda _: self.player_canvas.configure(scrollregion=self.player_canvas.bbox("all")))
         self.content_window = self.player_canvas.create_window((0, 0), window=self.player_content, anchor='nw')
-        # self.player_canvas.bind('<Expose>', lambda _: self.player_canvas.itemconfigure(self.content_window, width=self.player_canvas.winfo_width(), height=0))
+        self.player_canvas.bind('<Expose>', lambda _: self.player_canvas.itemconfigure(self.content_window, width=self.player_canvas.winfo_width(), height=0))
         self.player_canvas.pack(side='top', fill='both', expand=True)
         player_top_panel.pack(side='top', fill='both', expand=True)
         # add folders from settings
@@ -1486,10 +1485,6 @@ class Sounder(Tk):
         self.playlist_options.lift()
         self.playlist_entry.select_range(0, 'end')
         self.playlist_entry.focus_force()
-
-    def refresh_canvas(self) -> None:
-        self.player_canvas.configure(scrollregion=self.player_canvas.bbox("all"))
-        self.player_canvas.itemconfigure(self.content_window, width=self.player_canvas.winfo_width(), height=0)
 
 if __name__ == '__main__':
     Sounder().mainloop()

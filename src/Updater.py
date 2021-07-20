@@ -258,9 +258,8 @@ class Updater(Tk):
                 try:
                     updates_history = load(data)
                 except JSONDecodeError as _:
-                    updates_history = {'Updates': [{'Version': self.server_version, 'Date': strftime('%d-%m-%Y'), 'Hash': self.server_hash}]}
-        else:
-            updates_history['Updates'].append({'Version': self.server_version, 'Date': strftime('%d-%m-%Y'), 'Hash': self.server_hash})
+                    pass
+        updates_history['Updates'].append({'Version': self.server_version, 'Date': strftime('%d-%m-%Y'), 'Hash': self.server_hash})
         # update history
         with open(r'Resources\\Settings\\Updates.json', 'w') as data:
             try:
