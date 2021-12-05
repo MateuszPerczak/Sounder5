@@ -1,10 +1,9 @@
 Changelog:
 + Added a new filter option (Filter by most played).
-+ Added setting for marking song as played.
++ Added setting for marking a song as played.
 + Added setting for menu position (just for fun).
-+ Now sounder will automaticly add song in selected folders (no restart needed).
-+ Now updater will automaticly install required font.
++ Now sounder will automatically add song in selected folders (no restart needed).
++ Now updater will automatically install the required font.
 ~ Fixed updater.
 ~ Minor tweaks.
 * Smacznej kawusi wiadomo co i wiadomo kogo
-
