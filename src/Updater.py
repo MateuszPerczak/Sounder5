@@ -1,13 +1,12 @@
 try:
     from tkinter import Tk, ttk, PhotoImage
     from time import sleep
-    from sys import argv
+    from sys import argv, exit
     from os import remove, rename, startfile
     from os.path import basename, isfile
     from requests import get
     from zipfile import ZipFile
     from io import BytesIO
-    from sys import exit
     from psutil import process_iter
     from threading import Thread
     # from Components.Debugger import Debugger
@@ -18,11 +17,14 @@ try:
     from hashlib import sha256
     from json import dump, load
     from json.decoder import JSONDecodeError
+    from fontTools.ttLib import TTFont
+    from Components.FontManager import FontManager
 except ImportError as err:
+    basicConfig(filename=r'Resources\\Dumps\\updater_dump.txt', level=40)
     exit(err)
 
 class Updater(Tk):
-    def __init__(self) -> None:
+    def __init__(self: object) -> None:
         super().__init__()
         # hide window
         self.withdraw()
@@ -31,13 +33,14 @@ class Updater(Tk):
         self.title('Sounder updater')
         self.resizable(False, False)
         self.protocol('WM_DELETE_WINDOW', self.exit_app)
-        # self.bind('<F12>', lambda _: Debugger(self))
+        # self.bind('<F12>', lambda _: Debugger(self: object))
         self.init_logging()
         if self.self_update():
             self.exit_app()
         else:
             self.init_theme()
             self.load_icons()
+            self.init_font_loader()
             self.init_ui()
             self.update_idletasks()
             Thread(target=self.animation, daemon=True).start()
@@ -51,13 +54,13 @@ class Updater(Tk):
                 else:
                     self.reinstall_panel.lift()
 
-    def exit_app(self) -> None:
+    def exit_app(self: object) -> None:
         self.destroy()
         self.quit()
 
-    def init_logging(self) -> None:
+    def init_logging(self: object) -> None:
         # logging error messages
-        basicConfig(filename=f'Resources\\Dumps\\updater_dump.txt', level=40)
+        basicConfig(filename=fr'Resources\\Dumps\\updater_dump.txt', level=40)
 
     def log(self, err_obj, err_text: str) -> None:
         # DING!!!!!!
@@ -66,17 +69,26 @@ class Updater(Tk):
         self.err_panel.lift()
         error(err_obj, exc_info=True)
 
-    def self_update(self) -> bool:
+    def self_update(self: object) -> bool:
         # check instance name
         if basename(argv[0]) == 'New-Updater.exe':
+            sleep(5)
             if isfile('Updater.exe'): remove('Updater.exe')
+            sleep(4)
             rename(argv[0], 'Updater.exe')
         elif isfile('New-Updater.exe'):
             startfile('New-Updater.exe')
             return True
         return False
 
-    def init_ui(self) -> None:
+    def init_font_loader(self: object) -> None:
+        try:
+            FontManager().install_font(r'Resources\\Font\\Catamaran.ttf')
+        except Exception as err_obj:
+            self.log(err_obj, 'Unable to load font manager!')
+
+
+    def init_ui(self: object) -> None:
         # variables
         # error panel
         self.err_panel: ttk.Frame = ttk.Frame(self)
@@ -114,7 +126,7 @@ class Updater(Tk):
         # show window
         self.deiconify()
 
-    def init_theme(self) -> None:
+    def init_theme(self: object) -> None:
         # layout
         self.layout: ttk.Style = ttk.Style()
         # set theme to clam
@@ -134,7 +146,7 @@ class Updater(Tk):
         # progressbar
         self.layout.configure('Horizontal.TProgressbar', foreground='#111', background='#111', lightcolor='#111', darkcolor='#111', bordercolor='#212121', troughcolor='#212121')
 
-    def load_icons(self) -> None:
+    def load_icons(self: object) -> None:
         self.icons: dict = {
             'setup': PhotoImage(file=r'Resources\\Icons\\Updater\\setup.png'),
             'error': PhotoImage(file=r'Resources\\Icons\\Updater\\error.png'),
@@ -143,14 +155,14 @@ class Updater(Tk):
         }
         self.iconphoto(False, self.icons['setup'])
 
-    def get_args(self) -> bool:
+    def get_args(self: object) -> bool:
         self.version: str = '0.0.0'
         if len(argv) == 2:
             self.version = argv[1]
             return True
         return False
 
-    def get_version(self) -> bool:
+    def get_version(self: object) -> bool:
         try:
             self.server_version: str = get('https://raw.githubusercontent.com/losek1/Sounder5/master/updates/version.txt').text.strip()
             return True
@@ -158,25 +170,25 @@ class Updater(Tk):
             self.log(err_obj, 'Unable to connect to server!')
             return False
 
-    def compare_version(self) -> bool:
+    def compare_version(self: object) -> bool:
         try:
             return self.server_version != self.version and int(self.server_version.replace('.', '')) > int(self.version.replace('.', ''))
         except Exception as err_obj:
             self.log(err_obj, 'Unabe to convert server version!')
             return False
 
-    def kill_sounder(self) -> None:
+    def kill_sounder(self: object) -> None:
         for process in process_iter():
             if process.name() == "Sounder5.exe":
                 process.kill()
 
-    def check_package(self) -> bool:
+    def check_package(self: object) -> bool:
         self.update_package = get('https://raw.githubusercontent.com/losek1/Sounder5/master/updates/package.zip', stream=True)
         if self.update_package.status_code == 200:
             return True
         return False
 
-    def get_package(self) -> bool:
+    def get_package(self: object) -> bool:
         self.progress_label['text'] = 'Downloading 0%'
         bytes_downloaded: float = 0
         package_size: int = int(self.update_package.headers.get('Content-Length'))
@@ -226,7 +238,7 @@ class Updater(Tk):
             return True
         return False
 
-    def update(self) -> None:
+    def update(self: object) -> None:
         try:
             self.update_panel.lift()
             if self.check_package():
@@ -238,7 +250,7 @@ class Updater(Tk):
         except Exception as err_obj:
             self.log(err_obj, 'Something went wrong!')
 
-    def animation(self) -> None:
+    def animation(self: object) -> None:
         image_frames: list = []
         for frame in ImageSequence.Iterator(self.icons['loading']):
             image_frames.append(ImageTk.PhotoImage(frame.copy().convert('RGBA').resize((48, 48))))
@@ -246,11 +258,11 @@ class Updater(Tk):
             while True:
                 for frame in image_frames:
                     self.progress_label.configure(image=frame)
-                    sleep(0.025)
+                    sleep(0.03)
         else:
             self.progress_label.configure(image=image_frames)  
 
-    def update_history(self) -> None:
+    def update_history(self: object) -> None:
         updates_history: dict = {'Updates': []}
         # read history
         if isfile(r'Resources\\Settings\\Updates.json'):
@@ -264,10 +276,10 @@ class Updater(Tk):
         with open(r'Resources\\Settings\\Updates.json', 'w') as data:
             try:
                 dump(updates_history, data)
-            except Exception as _:
-                pass
+            except Exception as err_obj:
+                self.log(err_obj, 'Unable to push updates history!')
 
-    def after_update(self) -> None:
+    def after_update(self: object) -> None:
         if isfile('Sounder5.exe'):
             startfile('Sounder5.exe')
 

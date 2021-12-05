@@ -1,11 +1,10 @@
 Changelog:
-+ You can now click on the progress bar to change song position! (Experimental)
-+ Added setting for search spelling compensation.
-~ After double-clicking the name of a playlist, the playlist name will be automatically selected.
-~ Optimized sounder old functions with built-in ones!
-~ Changed search function to be more accurate and faster!
-~ Reduces the size of icons.
-~ Changed how sounder loads icons. (Should be a little quicker now)
-~ Move some functions to other threads!
-~ Added error catching to some of the functions. 
-- Removed some text from buttons!
++ Added a new filter option (Filter by most played).
++ Added setting for marking song as played.
++ Added setting for menu position (just for fun).
++ Now sounder will automaticly add song in selected folders (no restart needed).
++ Now updater will automaticly install required font.
+~ Fixed updater.
+~ Minor tweaks.
+* Smacznej kawusi wiadomo co i wiadomo kogo
+

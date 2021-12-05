@@ -2,11 +2,10 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Sounder5"
-#define MyAppVersion "0.0.0"
 #define MyAppPublisher "£osiek"
 #define MyAppURL "https://github.com/losek1/Sounder5"
 #define MyAppExeName "Sounder5.exe"
-
+#define MyAppVersion "0.0.0"
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
@@ -24,7 +23,7 @@ LicenseFile=D:\Python\New Projects\Sounder5\Setup\MIT.txt
 ; Remove the following line to run in administrative install mode (install for all users.)
 PrivilegesRequired=lowest
 OutputBaseFilename=Sounder Setup
-SetupIconFile=D:\Python\New Projects\Sounder5\Resources\Icons\Updater\setup.ico
+SetupIconFile=E:\Python\New Projects\Sounder5\Resources\Icons\Updater\setup.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
