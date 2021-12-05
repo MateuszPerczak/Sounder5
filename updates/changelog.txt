@@ -1,9 +1,8 @@
 Changelog:
-+ Added a new filter option (Filter by most played).
-+ Added setting for marking a song as played.
-+ Added setting for menu position (just for fun).
-+ Now sounder will automatically add song in selected folders (no restart needed).
-+ Now updater will automatically install the required font.
-~ Fixed updater.
-~ Minor tweaks.
-* Smacznej kawusi wiadomo co i wiadomo kogo
+~ Fixed bug that cause sounder to not mark the song as played.
+~ Fixed error when loading playlist with the missing song while filter by most played was selected.
+~ Fixed bug when sounder was trying to change properties of a frame that was previously deleted.
+~ Changed how sounder handles folder deletion. Now sounder won't stop music playback if the selected song wasn't in that folder.
+~ Fixed bug in updater that caused it to display an error message even tho everything went fine.
+~ Fixed issue that caused misallying of the songs when a folder was removed.
+~ Fixed issue which caused sounder to not monitor added folders.

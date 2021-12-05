@@ -113,9 +113,9 @@ class Sounder(Tk):
     def init_settings(self: object) -> None:
         try:
             # variables
-            default_settings: dict = {'played_percent': 0.6, 'menu_position': 'left', 'search_compensation': 0.7, 'delete_missing': False, 'follow': 1, 'crossfade': 100, 'shuffle': False, 'start_playback': False, 'playlist': 'Library', 'repeat': 'None', 'buffer': 'Normal', 'last_song': '', 'volume': 0.5, 'sort_by': 'A-Z', 'scan_subfolders': False, 'geometry': '800x500', 'wheel_acceleration': 1.0, 'updates': True, 'folders': [], 'use_system_theme': True, 'theme': 'Light', 'page': 'Library', 'playlists': {'Favorites': {'Name': 'Favorites', 'Songs': []}}}
+            default_settings: dict = {'played_percent': 2, 'menu_position': 'left', 'search_compensation': 0.7, 'delete_missing': False, 'follow': 1, 'crossfade': 100, 'shuffle': False, 'start_playback': False, 'playlist': 'Library', 'repeat': 'None', 'buffer': 'Normal', 'last_song': '', 'volume': 0.5, 'sort_by': 'A-Z', 'scan_subfolders': False, 'geometry': '800x500', 'wheel_acceleration': 1.0, 'updates': True, 'folders': [], 'use_system_theme': True, 'theme': 'Light', 'page': 'Library', 'playlists': {'Favorites': {'Name': 'Favorites', 'Songs': []}}}
             self.settings: dict = {}
-            self.version: tuple = ('0.7.8', '051221')
+            self.version: tuple = ('0.7.9', '061221')
             # load settings
             if isfile(r'Resources\\Settings\\Settings.json'):
                 with open(r'Resources\\Settings\\Settings.json', 'r') as data:
@@ -523,7 +523,7 @@ class Sounder(Tk):
         played_panel: ttk.Frame = ttk.Frame(settings_played, style='second.TFrame')
         ttk.Label(played_panel, image=self.icons['passed'], text='Played song sensitivity', compound='left').pack(side='left', anchor='center', fill='y')
         ttk.Label(played_panel, text='100%').pack(side='right', anchor='center', fill='y', padx=10)
-        ttk.Scale(played_panel, from_=.5, to=.9, variable=self.played_percent, command=self.change_played).pack(side='right', anchor='center', fill='x', ipadx=40)
+        ttk.Scale(played_panel, from_=2, to=1, variable=self.played_percent, command=self.change_played).pack(side='right', anchor='center', fill='x', ipadx=40)
         ttk.Label(played_panel, text='50%').pack(side='right', anchor='center', fill='y', padx=10)
         played_panel.pack(side='top', fill='x', pady=10, padx=10)
         ttk.Label(settings_played, image=self.icons['info'], text='Note: Sounder will mark a song as played when the passed time is above the set value!', compound='left', wraplength=(self.winfo_width() - 250)).pack(side='top', fill='x', padx=10, pady=(0, 10))
@@ -864,6 +864,7 @@ class Sounder(Tk):
                 self.add_folder(new_dir)
                 self.folder_panels[new_dir].pack(side='top', fill='both', expand=True, pady=5, padx=10)
                 Thread(target=self.scan_folders, daemon=True).start()
+                Thread(target=DirWatcher, args=(new_dir, 1,), daemon=True).start()
         except Exception as err_obj:
             self.log(err_obj)
 
@@ -892,13 +893,12 @@ class Sounder(Tk):
         try:
             path = abspath(path)
             temp_songs: list = self.library.copy()
-            if self.song in temp_songs:
+            if self.song in temp_songs and path == dirname(self.song):
                 self.song = ''
                 self.refresh_ui()
                 if mixer.music.get_busy():
                     mixer.music.stop()
                     mixer.music.unload()
-
             if self.settings['scan_subfolders']:
                 # get subdirectories
                 folders: list = [path, ]
@@ -1094,7 +1094,7 @@ class Sounder(Tk):
         self.settings['menu_position'] = self.menu_position.get()
 
     def change_played(self: object, _: Event) -> None:
-        self.settings['played_percent'] = self.played_position.get()
+        self.settings['played_percent'] = self.played_percent.get()
 
     def change_compensation(self: object, _: Event) -> None:
         self.settings['search_compensation'] = round(self.search_compensation.get(), 1)
@@ -1183,7 +1183,7 @@ class Sounder(Tk):
             self.log(err_obj)
 
     def sort_by_plays(self: object, song: str) -> int:
-        return self.songs_cache[song]['plays']
+        return self.songs_cache[song]['plays'] if song in self.songs_cache else 0
 
     def show_song(self: object, songs: list) -> None:
         if self.song in songs:
@@ -1291,7 +1291,12 @@ class Sounder(Tk):
                 self.songs_cache[song]
             if song in self.library:
                 self.library.remove(song)
-            if song in self.songs: self.songs.remove(song)
+            if song in self.songs:
+                self.songs.remove(song)
+            if self.song == song:
+                self.song = ''
+            if self.song in self.songs_queue:
+                self.songs_queue.remove(self.song)
         except Exception as err_obj:
             self.log(err_obj)
 
@@ -1309,7 +1314,7 @@ class Sounder(Tk):
                     self.favorite_button.configure(image=self.icons['heart'][1])
 
     def update_active_panel(self: object, song: str) -> None:
-        for active_song in filter(lambda active_song: active_song in self.songs_cache, self.active_panels):
+        for active_song in filter(lambda active_song: active_song in self.songs_cache and active_song in self.library, self.active_panels):
             self.songs_cache[active_song]['play_pause'].configure(image=self.icons['play_pause'][0])
             self.active_panels.remove(active_song)
         # for active_song in self.active_panels:
@@ -1361,8 +1366,7 @@ class Sounder(Tk):
 
     def mixer_play(self: object, song: str, start: float = 0) -> None:
         try:
-            
-            if self.settings['last_song'] and (self.progress_bar['value'] - self.offset) > (self.songs_cache[self.settings['last_song']]['length'] / self.settings['played_percent']):
+            if self.settings['last_song'] and (self.progress_bar['value'] - self.offset) >= (self.songs_cache[self.settings['last_song']]['length'] / self.settings['played_percent']):
                 self.songs_cache[self.settings['last_song']]['plays'] += 1
             if exists(song):
                 mixer.music.load(song)

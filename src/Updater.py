@@ -203,6 +203,7 @@ class Updater(Tk):
             del bytes_downloaded, package_size, self.update_package
             self.progress_label['text'] = 'Closing instances'
             self.kill_sounder()
+            sleep(5)
             self.progress_label['text'] = 'Applying update 0%'
             with ZipFile(BytesIO(update_zip)) as zip_file:
                 update_files = zip_file.namelist()
@@ -218,7 +219,7 @@ class Updater(Tk):
             self.progress_label['text'] = 'Registering update 0%'
             self.update_history()
             self.progress_label['text'] = 'Registering update 100%'
-            sleep(0.5)
+            sleep(1)
             self.progress_label['text'] = 'Applying update 100%'
             self.finish_panel.lift()
             self.after_update()
