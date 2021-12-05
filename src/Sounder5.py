@@ -115,7 +115,7 @@ class Sounder(Tk):
             # variables
             default_settings: dict = {'played_percent': 0.6, 'menu_position': 'left', 'search_compensation': 0.7, 'delete_missing': False, 'follow': 1, 'crossfade': 100, 'shuffle': False, 'start_playback': False, 'playlist': 'Library', 'repeat': 'None', 'buffer': 'Normal', 'last_song': '', 'volume': 0.5, 'sort_by': 'A-Z', 'scan_subfolders': False, 'geometry': '800x500', 'wheel_acceleration': 1.0, 'updates': True, 'folders': [], 'use_system_theme': True, 'theme': 'Light', 'page': 'Library', 'playlists': {'Favorites': {'Name': 'Favorites', 'Songs': []}}}
             self.settings: dict = {}
-            self.version: tuple = ('0.7.7', '051221')
+            self.version: tuple = ('0.7.8', '051221')
             # load settings
             if isfile(r'Resources\\Settings\\Settings.json'):
                 with open(r'Resources\\Settings\\Settings.json', 'r') as data:

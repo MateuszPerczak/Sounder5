@@ -17,7 +17,6 @@ try:
     from hashlib import sha256
     from json import dump, load
     from json.decoder import JSONDecodeError
-    from fontTools.ttLib import TTFont
     from Components.FontManager import FontManager
 except ImportError as err:
     basicConfig(filename=r'Resources\\Dumps\\updater_dump.txt', level=40)
