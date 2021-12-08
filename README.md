@@ -58,8 +58,13 @@ docker run -it sounder-dev
 - requests
 - threading
 - mutagen
-- re
 - win10toast (modified)
+- psutil
+- zipfile
+- hashlib
+- difflib
+- ctypes
+- 
 
 ### Sounder logo
 
@@ -69,13 +74,6 @@ Logo designer: [reallinfo](https://github.com/reallinfo)
 
 Icons: [icons8](https://icons8.com/)
 
-### TODOs
-
-Usability:
-
-- Add a check for file size when adding songs.
-
-#
 
 <p align="center"><img src="images/horizontal.png" alt="Sounder" height="120px"></p>
 
