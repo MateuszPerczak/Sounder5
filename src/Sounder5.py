@@ -80,6 +80,7 @@ class Sounder(Tk):
             ttk.Button(error_content, text='Exit', style='third.TButton', command=self.exit_app).pack(side='top', pady=(50, 0), padx=10)
             ttk.Button(error_content, text='Ignore', style='third.TButton', command=lambda: self.error_panel.lower()).pack(side='top', pady=(10, 0), padx=10)
             ttk.Button(error_content, text='Open Logs', style='third.TButton', command=self.open_logs).pack(side='top', pady=(10, 0), padx=10)
+            ttk.Button(error_content, text='Report an issue', style='third.TButton', command=self.open_logs).pack(side='top', pady=(10, 0), padx=10)
             error_content.place(relx=.5, rely=.5, anchor='center')
             ttk.Label(self.error_panel, text=f'version: {self.version[0]} [build: {self.version[1]}]', style='third.TLabel').pack(side='bottom', anchor='w', padx=10, pady=5)
             self.error_panel.place(x=0, y=0, relwidth=1, relheight=1)
@@ -115,7 +116,7 @@ class Sounder(Tk):
             # variables
             default_settings: dict = {'played_percent': 2, 'menu_position': 'left', 'search_compensation': 0.7, 'delete_missing': False, 'follow': 1, 'crossfade': 100, 'shuffle': False, 'start_playback': False, 'playlist': 'Library', 'repeat': 'None', 'buffer': 'Normal', 'last_song': '', 'volume': 0.5, 'sort_by': 'A-Z', 'scan_subfolders': False, 'geometry': '800x500', 'wheel_acceleration': 1.0, 'updates': True, 'folders': [], 'use_system_theme': True, 'theme': 'Light', 'page': 'Library', 'playlists': {'Favorites': {'Name': 'Favorites', 'Songs': []}}}
             self.settings: dict = {}
-            self.version: tuple = ('0.7.9', '061221')
+            self.version: tuple = ('0.8.0', '081221')
             # load settings
             if isfile(r'Resources\\Settings\\Settings.json'):
                 with open(r'Resources\\Settings\\Settings.json', 'r') as data:
@@ -1288,7 +1289,7 @@ class Sounder(Tk):
                 self.song_panels[song].destroy()
                 del self.song_panels[song]
             if song in self.songs_cache:
-                self.songs_cache[song]
+                del self.songs_cache[song]
             if song in self.library:
                 self.library.remove(song)
             if song in self.songs:

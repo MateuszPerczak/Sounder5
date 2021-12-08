@@ -1,8 +1,7 @@
 Changelog:
-~ Fixed bug that cause sounder to not mark the song as played.
-~ Fixed error when loading playlist with the missing song while filter by most played was selected.
-~ Fixed bug when sounder was trying to change properties of a frame that was previously deleted.
-~ Changed how sounder handles folder deletion. Now sounder won't stop music playback if the selected song wasn't in that folder.
-~ Fixed bug in updater that caused it to display an error message even tho everything went fine.
-~ Fixed issue that caused misallying of the songs when a folder was removed.
-~ Fixed issue which caused sounder to not monitor added folders.
+~ Fixed critical issue caused by updater replacing user settings.
+~ Fixed bug where sounder would crash when a song was removed.
+~ Updated app image on readme page.
++ Added proper compiler for the whole project.
+~ Updated timings in updater (should cause fewer problems now).
+> That's probably one of the last updates :(

@@ -75,6 +75,7 @@ class Updater(Tk):
             if isfile('Updater.exe'): remove('Updater.exe')
             sleep(4)
             rename(argv[0], 'Updater.exe')
+            sleep(2)
         elif isfile('New-Updater.exe'):
             startfile('New-Updater.exe')
             return True
@@ -203,23 +204,24 @@ class Updater(Tk):
             del bytes_downloaded, package_size, self.update_package
             self.progress_label['text'] = 'Closing instances'
             self.kill_sounder()
-            sleep(5)
+            sleep(2)
             self.progress_label['text'] = 'Applying update 0%'
             with ZipFile(BytesIO(update_zip)) as zip_file:
                 update_files = zip_file.namelist()
                 files_to_update: int = len(update_files)
                 for file in update_files:
                     self.progress_label['text'] = f'Applying update {int((update_files.index(file) * 100) / files_to_update)}%'
-                    if file in ('Updater.exe', 'Settings.json', 'Updates.json', 'updater_dump.txt', 'sounder_dump.txt'):
+                    if file in ('Updater.exe', 'Resources/Settings/Settings.json', 'Resources/Settings/Updates.json', 'Resources/Dumps/updater_dump.txt', 'Resources/Dumps/sounder_dump.txt'):
                         continue
                     try:
                         zip_file.extract(file)
-                    except Exception as err_obj:
-                        self.log(err_obj, 'Unabe to apply update!')
+                    except Exception as _:
+                        pass
             self.progress_label['text'] = 'Registering update 0%'
+            sleep(1)
             self.update_history()
             self.progress_label['text'] = 'Registering update 100%'
-            sleep(1)
+            sleep(2)
             self.progress_label['text'] = 'Applying update 100%'
             self.finish_panel.lift()
             self.after_update()
