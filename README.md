@@ -64,7 +64,6 @@ docker run -it sounder-dev
 - hashlib
 - difflib
 - ctypes
-- 
 
 ### Sounder logo
 
