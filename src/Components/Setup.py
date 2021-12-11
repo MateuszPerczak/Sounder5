@@ -1,5 +1,5 @@
 try:
-    from tkinter import Toplevel, ttk, Canvas, StringVar, BooleanVar, PhotoImage
+    from tkinter import Toplevel, ttk, Canvas, StringVar, BooleanVar, PhotoImage, Tk
     from tkinter.filedialog import askdirectory, askopenfilename
     from os.path import basename, abspath
     from time import sleep
@@ -11,7 +11,7 @@ except ImportError as err:
 
 
 class SSetup(Toplevel):
-    def __init__(self, parent, settings: dict) -> None:
+    def __init__(self: Toplevel, parent: Tk, settings: dict) -> None:
         super().__init__(parent)
         # variables
         self.settings = settings
@@ -23,7 +23,8 @@ class SSetup(Toplevel):
         self.geometry(f'500x620+{int(self.winfo_x() + ((self.winfo_screenwidth() / 2) - 250))}+{int(self.winfo_y() + ((self.winfo_screenheight() / 2) - 310))}')
         self.resizable(False, False)
         self.title('Sounder configurator')
-        self.protocol('WM_DELETE_WINDOW', self.exit_app)
+        self.protocol('WM_DELETE_WINDOW', self.dummy_exit)
+
         # init layout
         self.init_layout()
         # load icons
@@ -35,11 +36,14 @@ class SSetup(Toplevel):
         # show window
         self.deiconify()
 
-    def exit_app(self) -> None:
+    def dummy_exit(self: Toplevel) -> None:
+        pass
+
+    def exit_app(self: Toplevel) -> None:
         self.quit()
         self.destroy()
         
-    def init_layout(self) -> None:
+    def init_layout(self: Toplevel) -> None:
         # init theme object
         self.layout: ttk.Style = ttk.Style()
         # set theme to clam
@@ -51,7 +55,7 @@ class SSetup(Toplevel):
         # scrollbar
         self.layout.layout('Vertical.TScrollbar', [('Vertical.Scrollbar.trough', {'children': [('Vertical.Scrollbar.thumb', {'expand': '1', 'sticky': 'nswe'})], 'sticky': 'ns'})])
 
-    def init_ui(self) -> None:
+    def init_ui(self: Toplevel) -> None:
         # variables
         self.theme: StringVar = StringVar(value='System')
         self.updates: BooleanVar = BooleanVar(value=True)
@@ -108,6 +112,7 @@ class SSetup(Toplevel):
         ttk.Radiobutton(appearance_content, image=self.icons['brush'], text='Light', compound='left', variable=self.theme, value='Light', command=self.change_theme).pack(side='top', fill='x', padx=10, pady=5, ipadx=45)
         ttk.Radiobutton(appearance_content, image=self.icons['brush'], text='Dark', compound='left', variable=self.theme, value='Dark', command=self.change_theme).pack(side='top', fill='x', padx=10, pady=5, ipadx=45)
         ttk.Radiobutton(appearance_content, image=self.icons['brush'], text='System', compound='left', variable=self.theme, value='System', command=self.change_theme).pack(side='top', fill='x', padx=10, pady=5, ipadx=45)
+        ttk.Radiobutton(appearance_content, image=self.icons['brush'], text='Contrast', compound='left', variable=self.theme, value='Contrast', command=self.change_theme).pack(side='top', fill='x', padx=10, pady=5, ipadx=45)
         appearance_content.pack(anchor='center', padx=10, pady=10, expand=True)
         ttk.Button(appearance_panel, text='Next', image=self.icons['arrow'][1], compound='right', style='second.TButton', command=lambda: self.next_page(updates_panel)).pack(side='bottom', pady=10, anchor='center')
         appearance_panel.place(x=0, y=0, relwidth=1, relheight=1)
@@ -131,7 +136,7 @@ class SSetup(Toplevel):
         # show welcome panel 
         welcome_panel.lift()
 
-    def load_icons(self) -> None:
+    def load_icons(self: Toplevel) -> None:
         self.icons: dict = {
             'arrow': (PhotoImage(file=r'Resources\\Icons\\Configurator\\left.png'), PhotoImage(file=r'Resources\\Icons\\Configurator\\right.png')),
             'logo': PhotoImage(file=r'Resources\\Icons\\Configurator\\setup.png'),
@@ -143,7 +148,7 @@ class SSetup(Toplevel):
         }
         self.iconphoto(False, self.icons['logo'])
 
-    def apply_theme(self) -> None:
+    def apply_theme(self: Toplevel) -> None:
         # window 
         self.configure(background='#212121')
         # frame
@@ -166,7 +171,7 @@ class SSetup(Toplevel):
         # scale
         self.layout.configure('Horizontal.TProgressbar', foreground='#111', background='#111', lightcolor='#111', darkcolor='#111', bordercolor='#212121', troughcolor='#212121')
 
-    def add_folder(self) -> None:
+    def add_folder(self: Toplevel) -> None:
         temp_dir: str = askdirectory()
         if temp_dir and not temp_dir in self.settings['folders']:
             temp_dir = abspath(temp_dir)
@@ -189,20 +194,20 @@ class SSetup(Toplevel):
             if len(self.settings['folders']) == 0:
                 self.folder_button.configure(text='Skip')
 
-    def change_theme(self) -> None:
+    def change_theme(self: Toplevel) -> None:
         theme: str = self.theme.get()
         if theme != 'System':
             self.settings['use_system_theme'] = False
             self.settings['theme'] = theme
 
-    def change_updates(self) -> None:
+    def change_updates(self: Toplevel) -> None:
         self.settings['updates'] = self.updates.get()
 
     def next_page(self, page) -> None:
         Thread(target=self.update_progress, daemon=True).start()
         page.lift()
 
-    def update_progress(self) -> None:
+    def update_progress(self: Toplevel) -> None:
         for _ in range(10):
             self.progress_bar['value'] += 10
             sleep(0.01)
@@ -216,7 +221,7 @@ class SSetup(Toplevel):
         if self.progress_bar['value'] == self.pages * 100:
             self.progress_bar['value'] = 0
 
-    def import_settings(self) -> None:
+    def import_settings(self: Toplevel) -> None:
         settings_file: str = askopenfilename(title='Open a settings file', initialdir='/', filetypes=(('Sounder settings files', '*.json'),))
         if settings_file:
             with open(settings_file, 'r') as data:

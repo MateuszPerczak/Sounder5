@@ -1,7 +1,7 @@
 from os.path import join, abspath
 from os import listdir, remove
 from PIL import Image
-from PIL.ImageOps import invert
+from PIL.ImageOps import invert, colorize
 from typing import ClassVar
 
 
@@ -29,7 +29,7 @@ def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, 
 
 from_path: str = 'Resources\\Icons\\Light'
 to_path: str = 'Resources\\Icons\\Dark'
-
+contrast_path: str = 'Resources\\Icons\\Contrast'
 # remove unnecessary files
 files: list = listdir(from_path)
 printProgressBar(0, len(files) - 1, prefix = 'Progress:', suffix = 'Complete', length = 50)
@@ -60,3 +60,19 @@ for icon in files:
         new_image.save(join(to_path, icon))
         del new_image, red, green, blue, alpha
 
+for icon in files:
+    printProgressBar(files.index(icon), len(files) - 1, prefix = 'Progress:', suffix = 'Complete', length = 50)
+    if icon in ignore_files: continue
+    image: Image = Image.open(join(from_path, icon))
+    if image.mode == 'RGBA':
+        red, green, blue, alpha = image.split()
+        del image
+        # inverted image
+        temp_icon: Image = Image.merge('RGB', (red, green, blue))
+        red, green, blue = colorize(temp_icon.convert("L"), black="#3ff23f", white="#3ff23f").split()
+        del temp_icon
+
+        new_image: Image = Image.merge('RGBA', (red, green, blue, alpha))
+        # save new image to new dir
+        new_image.save(join(contrast_path, icon))
+        del new_image, red, green, blue, alpha

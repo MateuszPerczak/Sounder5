@@ -229,7 +229,7 @@ class Builder(Tk):
             copytree('Resources', 'Build\\Resources')
             remove('Build\\Resources\\Settings\\Settings.json')
             with open('Build\\Resources\\Settings\\Updates.json', 'w') as data:
-                dump({"Updates": []}, data)
+                dump({"Updates": [{"Version": "0.8.1", "Date": "11-12-2021", "Hash": "Local"}]}, data)
             return True
         except Exception as err_obj:
             self.__push_msg_(f'Error: {err_obj}', type='err')

@@ -1,7 +1,7 @@
 Changelog:
-~ Fixed critical issue caused by updater replacing user settings.
-~ Fixed bug where sounder would crash when a song was removed.
-~ Updated app image on readme page.
-+ Added proper compiler for the whole project.
-~ Updated timings in updater (should cause fewer problems now).
+~ FIXED cursor color in search box finally!!
++ Added time info to playlists and library.
+~ FIXED error caused by playing a song when a folder was deleted!
++ Added contrast theme.
+~ Changed Dark and Light themes colors.
 > That's probably one of the last updates :(
