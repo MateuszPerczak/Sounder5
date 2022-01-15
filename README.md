@@ -2,7 +2,7 @@
 
 ## Music player written in python
 
-Note: Sounder is still in development. Please keep in mind that the final appearance may change!
+<span style="color: #FF0000;">Note: This app will be rewritten soon, mainly because of spaghetti cone in one big file :(</span>
 
 #
 
