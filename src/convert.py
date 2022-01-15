@@ -5,7 +5,7 @@ from PIL.ImageOps import invert, colorize
 from typing import ClassVar
 
 
-def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
+def printProgressBar(iteration, total, prefix='', suffix='', decimals=1, length=100, fill='█', printEnd="\r"):
     """
     Call in a loop to create terminal progress bar
     @params:
@@ -18,12 +18,13 @@ def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, 
         fill        - Optional  : bar fill character (Str)
         printEnd    - Optional  : end character (e.g. "\r", "\r\n") (Str)
     """
-    percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+    percent = ("{0:." + str(decimals) + "f}").format(100 *
+                                                     (iteration / float(total)))
     filledLength = int(length * iteration // total)
     bar = fill * filledLength + '-' * (length - filledLength)
-    print(f'\r{prefix} |{bar}| {percent}% {suffix}', end = printEnd)
+    print(f'\r{prefix} |{bar}| {percent}% {suffix}', end=printEnd)
     # Print New Line on Complete
-    if iteration == total: 
+    if iteration == total:
         print()
 
 
@@ -32,7 +33,8 @@ to_path: str = 'Resources\\Icons\\Dark'
 contrast_path: str = 'Resources\\Icons\\Contrast'
 # remove unnecessary files
 files: list = listdir(from_path)
-printProgressBar(0, len(files) - 1, prefix = 'Progress:', suffix = 'Complete', length = 50)
+printProgressBar(0, len(files) - 1, prefix='Progress:',
+                 suffix='Complete', length=50)
 for file in listdir(to_path):
     if file in files:
         continue
@@ -42,8 +44,10 @@ for file in listdir(to_path):
 ignore_files: tuple = ('icon.ico', 'logo.png')
 # invert colors of icons
 for icon in files:
-    printProgressBar(files.index(icon), len(files) - 1, prefix = 'Progress:', suffix = 'Complete', length = 50)
-    if icon in ignore_files: continue
+    printProgressBar(files.index(icon), len(files) - 1,
+                     prefix='Progress:', suffix='Complete', length=50)
+    if icon in ignore_files:
+        continue
     image: Image = Image.open(join(from_path, icon))
     if image.mode == 'RGBA':
         red, green, blue, alpha = image.split()
@@ -61,15 +65,18 @@ for icon in files:
         del new_image, red, green, blue, alpha
 
 for icon in files:
-    printProgressBar(files.index(icon), len(files) - 1, prefix = 'Progress:', suffix = 'Complete', length = 50)
-    if icon in ignore_files: continue
+    printProgressBar(files.index(icon), len(files) - 1,
+                     prefix='Progress:', suffix='Complete', length=50)
+    if icon in ignore_files:
+        continue
     image: Image = Image.open(join(from_path, icon))
     if image.mode == 'RGBA':
         red, green, blue, alpha = image.split()
         del image
         # inverted image
         temp_icon: Image = Image.merge('RGB', (red, green, blue))
-        red, green, blue = colorize(temp_icon.convert("L"), black="#3ff23f", white="#3ff23f").split()
+        red, green, blue = colorize(temp_icon.convert(
+            "L"), black="#3ff23f", white="#3ff23f").split()
         del temp_icon
 
         new_image: Image = Image.merge('RGBA', (red, green, blue, alpha))

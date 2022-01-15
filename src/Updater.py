@@ -22,13 +22,15 @@ except ImportError as err:
     basicConfig(filename=r'Resources\\Dumps\\updater_dump.txt', level=40)
     exit(err)
 
+
 class Updater(Tk):
     def __init__(self: object) -> None:
         super().__init__()
         # hide window
         self.withdraw()
         # configure window
-        self.geometry(f'400x150+{int((self.winfo_screenwidth() / 2) - 200)}+{int((self.winfo_screenheight() / 2) - 75)}')
+        self.geometry(
+            f'400x150+{int((self.winfo_screenwidth() / 2) - 200)}+{int((self.winfo_screenheight() / 2) - 75)}')
         self.title('Sounder updater')
         self.resizable(False, False)
         self.protocol('WM_DELETE_WINDOW', self.exit_app)
@@ -64,7 +66,8 @@ class Updater(Tk):
     def log(self, err_obj, err_text: str) -> None:
         # DING!!!!!!
         self.bell()
-        self.err_label['text'] = err_text if err_text else format_exc().split("\n")[-2]
+        self.err_label['text'] = err_text if err_text else format_exc().split(
+            "\n")[-2]
         self.err_panel.lift()
         error(err_obj, exc_info=True)
 
@@ -72,7 +75,8 @@ class Updater(Tk):
         # check instance name
         if basename(argv[0]) == 'New-Updater.exe':
             sleep(5)
-            if isfile('Updater.exe'): remove('Updater.exe')
+            if isfile('Updater.exe'):
+                remove('Updater.exe')
             sleep(4)
             rename(argv[0], 'Updater.exe')
             sleep(2)
@@ -87,38 +91,46 @@ class Updater(Tk):
         except Exception as err_obj:
             self.log(err_obj, 'Unable to load font manager!')
 
-
     def init_ui(self: object) -> None:
         # variables
         # error panel
         self.err_panel: ttk.Frame = ttk.Frame(self)
-        self.err_label: ttk.Label = ttk.Label(self.err_panel, image=self.icons['error'], text='Unable to display the error message!', compound='top')
+        self.err_label: ttk.Label = ttk.Label(
+            self.err_panel, image=self.icons['error'], text='Unable to display the error message!', compound='top')
         self.err_label.pack(side='top', anchor='c', pady=(10, 5))
-        ttk.Button(self.err_panel, text='Exit', command=self.exit_app).pack(side='bottom', anchor='c', pady=(0, 10))
+        ttk.Button(self.err_panel, text='Exit', command=self.exit_app).pack(
+            side='bottom', anchor='c', pady=(0, 10))
         self.err_panel.place(x=0, y=0, relwidth=1, relheight=1)
         # init panel
         init_panel: ttk.Frame = ttk.Frame(self)
-        ttk.Label(init_panel, text='Checking ...').pack(side='top', anchor='c', expand=True, pady=(10, 5))
+        ttk.Label(init_panel, text='Checking ...').pack(
+            side='top', anchor='c', expand=True, pady=(10, 5))
         init_panel.place(x=0, y=0, relwidth=1, relheight=1)
         # reinstall panel
         self.reinstall_panel: ttk.Frame = ttk.Frame(self)
-        ttk.Label(self.reinstall_panel, text='The latest version of Sounder is already installed.\nWould you like to reinstall it?').pack(side='top', pady=(10, 5), padx=5)
+        ttk.Label(self.reinstall_panel, text='The latest version of Sounder is already installed.\nWould you like to reinstall it?').pack(
+            side='top', pady=(10, 5), padx=5)
         reinstall_buttons: ttk.Frame = ttk.Frame(self.reinstall_panel)
-        ttk.Button(reinstall_buttons, text='Reinstall', command=lambda: Thread(target=self.update, daemon=True).start()).pack(side='left', anchor='c', pady=(0, 5), padx=(10, 5))
-        ttk.Button(reinstall_buttons, text='Exit', command=self.exit_app).pack(side='right', anchor='c', pady=(0, 5), padx=(5, 10))
+        ttk.Button(reinstall_buttons, text='Reinstall', command=lambda: Thread(
+            target=self.update, daemon=True).start()).pack(side='left', anchor='c', pady=(0, 5), padx=(10, 5))
+        ttk.Button(reinstall_buttons, text='Exit', command=self.exit_app).pack(
+            side='right', anchor='c', pady=(0, 5), padx=(5, 10))
         reinstall_buttons.pack(side='bottom', pady=(0, 10))
         self.reinstall_panel.place(x=0, y=0, relwidth=1, relheight=1)
         # update panel
         self.update_panel: ttk.Frame = ttk.Frame(self)
         # update label
-        self.progress_label: ttk.Label = ttk.Label(self.update_panel, text='Checking', image=self.icons['setup'], anchor='center', style='second.TLabel', compound='top')
+        self.progress_label: ttk.Label = ttk.Label(
+            self.update_panel, text='Checking', image=self.icons['setup'], anchor='center', style='second.TLabel', compound='top')
         self.progress_label.pack(fil='both', side='top', expand=True)
         self.update_panel.place(x=0, y=0, relwidth=1, relheight=1)
         # finish panel
         self.finish_panel: ttk.Frame = ttk.Frame(self)
-        ttk.Label(self.finish_panel, image=self.icons['checkmark'], text='All done!', compound='top').pack(side='top', pady=(10, 5), padx=5)
+        ttk.Label(self.finish_panel, image=self.icons['checkmark'], text='All done!', compound='top').pack(
+            side='top', pady=(10, 5), padx=5)
         finish_buttons: ttk.Frame = ttk.Frame(self.finish_panel)
-        ttk.Button(finish_buttons, text='Exit', command=self.exit_app).pack(side='right', anchor='c', pady=(0, 5), padx=(5, 10))
+        ttk.Button(finish_buttons, text='Exit', command=self.exit_app).pack(
+            side='right', anchor='c', pady=(0, 5), padx=(5, 10))
         finish_buttons.pack(side='bottom', pady=(0, 10))
         self.finish_panel.place(x=0, y=0, relwidth=1, relheight=1)
         # show init window
@@ -132,19 +144,24 @@ class Updater(Tk):
         # set theme to clam
         self.layout.theme_use('clam')
         # button
-        self.layout.layout('TButton', [('Button.padding', {'sticky': 'nswe', 'children': [('Button.label', {'sticky': 'nswe'})]})])
+        self.layout.layout('TButton', [('Button.padding', {
+                           'sticky': 'nswe', 'children': [('Button.label', {'sticky': 'nswe'})]})])
         # theme
         self.configure(background='#212121')
         # label
-        self.layout.configure('TLabel', background='#212121', font=('catamaran 13 bold'), foreground='#fff', anchor='c')
+        self.layout.configure('TLabel', background='#212121', font=(
+            'catamaran 13 bold'), foreground='#fff', anchor='c')
         self.layout.configure('second.TLabel', font=('catamaran 16 bold'))
         # panel
         self.layout.configure('TFrame', background='#212121')
         # button
-        self.layout.configure('TButton', background='#111', relief='flat', font=('catamaran 12 bold'), foreground='#fff')
-        self.layout.map('TButton', background=[('pressed', '!disabled', '#212121'), ('active', '#212121'), ('selected', '#212121')])
+        self.layout.configure('TButton', background='#111', relief='flat', font=(
+            'catamaran 12 bold'), foreground='#fff')
+        self.layout.map('TButton', background=[
+                        ('pressed', '!disabled', '#212121'), ('active', '#212121'), ('selected', '#212121')])
         # progressbar
-        self.layout.configure('Horizontal.TProgressbar', foreground='#111', background='#111', lightcolor='#111', darkcolor='#111', bordercolor='#212121', troughcolor='#212121')
+        self.layout.configure('Horizontal.TProgressbar', foreground='#111', background='#111',
+                              lightcolor='#111', darkcolor='#111', bordercolor='#212121', troughcolor='#212121')
 
     def load_icons(self: object) -> None:
         self.icons: dict = {
@@ -164,7 +181,8 @@ class Updater(Tk):
 
     def get_version(self: object) -> bool:
         try:
-            self.server_version: str = get('https://raw.githubusercontent.com/losek1/Sounder5/master/updates/version.txt').text.strip()
+            self.server_version: str = get(
+                'https://raw.githubusercontent.com/losek1/Sounder5/master/updates/version.txt').text.strip()
             return True
         except Exception as err_obj:
             self.log(err_obj, 'Unable to connect to server!')
@@ -183,7 +201,8 @@ class Updater(Tk):
                 process.kill()
 
     def check_package(self: object) -> bool:
-        self.update_package = get('https://raw.githubusercontent.com/losek1/Sounder5/master/updates/package.zip', stream=True)
+        self.update_package = get(
+            'https://raw.githubusercontent.com/losek1/Sounder5/master/updates/package.zip', stream=True)
         if self.update_package.status_code == 200:
             return True
         return False
@@ -191,7 +210,8 @@ class Updater(Tk):
     def get_package(self: object) -> bool:
         self.progress_label['text'] = 'Downloading 0%'
         bytes_downloaded: float = 0
-        package_size: int = int(self.update_package.headers.get('Content-Length'))
+        package_size: int = int(
+            self.update_package.headers.get('Content-Length'))
         update_zip: bytes = b''
         for package in self.update_package.iter_content(chunk_size=8192):
             if package:
@@ -210,7 +230,8 @@ class Updater(Tk):
                 update_files = zip_file.namelist()
                 files_to_update: int = len(update_files)
                 for file in update_files:
-                    self.progress_label['text'] = f'Applying update {int((update_files.index(file) * 100) / files_to_update)}%'
+                    self.progress_label[
+                        'text'] = f'Applying update {int((update_files.index(file) * 100) / files_to_update)}%'
                     if file in ('Updater.exe', 'Resources/Settings/Settings.json', 'Resources/Settings/Updates.json', 'Resources/Dumps/updater_dump.txt', 'Resources/Dumps/sounder_dump.txt'):
                         continue
                     try:
@@ -231,7 +252,8 @@ class Updater(Tk):
 
     def verify_package(self, package_bytes: bytes) -> bool:
         try:
-            self.server_hash: str = get('https://raw.githubusercontent.com/losek1/Sounder5/master/updates/hash.txt').text.strip()
+            self.server_hash: str = get(
+                'https://raw.githubusercontent.com/losek1/Sounder5/master/updates/hash.txt').text.strip()
         except Exception as err_obj:
             self.log(err_obj, 'Unable to connect to server!')
             return False
@@ -255,14 +277,15 @@ class Updater(Tk):
     def animation(self: object) -> None:
         image_frames: list = []
         for frame in ImageSequence.Iterator(self.icons['loading']):
-            image_frames.append(ImageTk.PhotoImage(frame.copy().convert('RGBA').resize((48, 48))))
+            image_frames.append(ImageTk.PhotoImage(
+                frame.copy().convert('RGBA').resize((48, 48))))
         if len(image_frames) > 1:
             while True:
                 for frame in image_frames:
                     self.progress_label.configure(image=frame)
                     sleep(0.03)
         else:
-            self.progress_label.configure(image=image_frames)  
+            self.progress_label.configure(image=image_frames)
 
     def update_history(self: object) -> None:
         updates_history: dict = {'Updates': []}
@@ -273,7 +296,8 @@ class Updater(Tk):
                     updates_history = load(data)
                 except JSONDecodeError as _:
                     pass
-        updates_history['Updates'].append({'Version': self.server_version, 'Date': strftime('%d-%m-%Y'), 'Hash': self.server_hash})
+        updates_history['Updates'].append(
+            {'Version': self.server_version, 'Date': strftime('%d-%m-%Y'), 'Hash': self.server_hash})
         # update history
         with open(r'Resources\\Settings\\Updates.json', 'w') as data:
             try:
@@ -284,6 +308,7 @@ class Updater(Tk):
     def after_update(self: object) -> None:
         if isfile('Sounder5.exe'):
             startfile('Sounder5.exe')
+
 
 if __name__ == '__main__':
     Updater().mainloop()

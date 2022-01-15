@@ -2,6 +2,7 @@ from tkinter import Toplevel, Label, Button, ttk, Frame, Canvas, Scrollbar, Entr
 from typing import ClassVar
 from traceback import format_exc
 
+
 class Debugger:
     def __init__(self, parent) -> None:
         self.parent = parent
@@ -14,15 +15,24 @@ class Debugger:
         self.main_window.configure(background='#212121')
         self.main_theme: ClassVar = ttk.Style()
         self.main_theme.theme_use('clam')
-        self.main_theme.layout('debugger.TEntry',[('Entry.padding', {'children': [('Entry.textarea', {'sticky': 'nswe'})],'sticky': 'nswe'})])
-        self.main_theme.configure('debugger.TEntry', background='#111',  foreground='#fff', fieldbackground='#111', selectforeground='#fff', selectbackground='#333')
-        self.main_theme.configure('debugger.small.TButton', background='#111', relief='flat', font=('Consolas', 9), foreground='#fff')
-        self.main_theme.map('debugger.small.TButton', background=[('pressed', '!disabled', '#111'), ('active', '#151515')])
-        self.main_theme.configure('debugger.TButton', background='#111', relief='flat', font=('Consolas', 12), foreground='#fff')
-        self.main_theme.map('debugger.TButton', background=[('pressed', '!disabled', '#111'), ('active', '#151515')])
-        self.main_theme.configure('debugger.Vertical.TScrollbar', gripcount=0, relief='flat', background='#333', darkcolor='#111', lightcolor='#111', troughcolor='#111', bordercolor='#111', arrowcolor='#333')
-        self.main_theme.layout('debugger.Vertical.TScrollbar',[('Vertical.Scrollbar.trough', {'children': [('Vertical.Scrollbar.thumb', {'expand': '1', 'sticky': 'nswe'})], 'sticky': 'ns'})])
-        self.main_theme.map('debugger.Vertical.TScrollbar', background=[('pressed', '!disabled', '#313131'), ('disabled', '#111'), ('active', '#313131'), ('!active', '#333')])
+        self.main_theme.layout('debugger.TEntry', [('Entry.padding', {'children': [
+                               ('Entry.textarea', {'sticky': 'nswe'})], 'sticky': 'nswe'})])
+        self.main_theme.configure('debugger.TEntry', background='#111',  foreground='#fff',
+                                  fieldbackground='#111', selectforeground='#fff', selectbackground='#333')
+        self.main_theme.configure('debugger.small.TButton', background='#111', relief='flat', font=(
+            'Consolas', 9), foreground='#fff')
+        self.main_theme.map('debugger.small.TButton', background=[
+                            ('pressed', '!disabled', '#111'), ('active', '#151515')])
+        self.main_theme.configure('debugger.TButton', background='#111', relief='flat', font=(
+            'Consolas', 12), foreground='#fff')
+        self.main_theme.map('debugger.TButton', background=[
+                            ('pressed', '!disabled', '#111'), ('active', '#151515')])
+        self.main_theme.configure('debugger.Vertical.TScrollbar', gripcount=0, relief='flat', background='#333',
+                                  darkcolor='#111', lightcolor='#111', troughcolor='#111', bordercolor='#111', arrowcolor='#333')
+        self.main_theme.layout('debugger.Vertical.TScrollbar', [('Vertical.Scrollbar.trough', {
+                               'children': [('Vertical.Scrollbar.thumb', {'expand': '1', 'sticky': 'nswe'})], 'sticky': 'ns'})])
+        self.main_theme.map('debugger.Vertical.TScrollbar', background=[(
+            'pressed', '!disabled', '#313131'), ('disabled', '#111'), ('active', '#313131'), ('!active', '#333')])
         # window attributes
         self.main_window.attributes("-topmost", True)
         self.main_window.title(f'DEBUGGING: {self.parent.title()}')
@@ -38,85 +48,130 @@ class Debugger:
         self.blank_photo.blank()
         self.main_window.iconphoto(False, self.blank_photo)
         # content
-        top_frame: ClassVar = Frame(self.main_window, background=self.main_window['background'])
+        top_frame: ClassVar = Frame(
+            self.main_window, background=self.main_window['background'])
         # inspect button
-        self.inspect_button: ClassVar = ttk.Button(top_frame, text='INSPECT ELEMENT', takefocus=False, style='debugger.TButton', command=self.toggle_inspect)
+        self.inspect_button: ClassVar = ttk.Button(
+            top_frame, text='INSPECT ELEMENT', takefocus=False, style='debugger.TButton', command=self.toggle_inspect)
         self.inspect_button.pack(side='left', padx=(10, 0), pady=10)
-        self.inspect_next_button: ClassVar = ttk.Button(top_frame, text='INSPECT NEXT', takefocus=False, style='debugger.TButton', command=self.inspect_next)
+        self.inspect_next_button: ClassVar = ttk.Button(
+            top_frame, text='INSPECT NEXT', takefocus=False, style='debugger.TButton', command=self.inspect_next)
         self.inspect_next_button.state(['disabled'])
         self.inspect_next_button.pack(side='left', padx=(10, 0), pady=10)
-        self.widgets_label: ClassVar = Label(top_frame, text=f'{len(self.get_all_widgets(self.parent))} WIDGETS', background='#111', foreground='#fff', font=('Consolas', 12))
-        self.widgets_label.pack(side='left', padx=(10, 0), pady=10, ipady=5, ipadx=5)
-        self.refresh_button: ClassVar = ttk.Button(top_frame, text='REFRESH', takefocus=False, style='debugger.TButton', command=lambda: self.inspect_widget(self.widget))
+        self.widgets_label: ClassVar = Label(
+            top_frame, text=f'{len(self.get_all_widgets(self.parent))} WIDGETS', background='#111', foreground='#fff', font=('Consolas', 12))
+        self.widgets_label.pack(side='left', padx=(
+            10, 0), pady=10, ipady=5, ipadx=5)
+        self.refresh_button: ClassVar = ttk.Button(
+            top_frame, text='REFRESH', takefocus=False, style='debugger.TButton', command=lambda: self.inspect_widget(self.widget))
         self.refresh_button.state(['disabled'])
         self.refresh_button.pack(side='left', padx=(10, 0))
-        self.mode_label: ClassVar = Label(top_frame, text='NORMAL', background='#111', foreground='#fff', font=('Consolas', 12))
+        self.mode_label: ClassVar = Label(
+            top_frame, text='NORMAL', background='#111', foreground='#fff', font=('Consolas', 12))
         self.mode_label.pack(side='left', padx=10, ipady=5, ipadx=5)
         top_frame.pack(side='top', fill='x')
-        mid_frame: ClassVar = Frame(self.main_window, background=self.main_window['background'])
+        mid_frame: ClassVar = Frame(
+            self.main_window, background=self.main_window['background'])
         widget_frame: ClassVar = Frame(mid_frame, background='#333')
-        Label(widget_frame, text='WIDGET CLASS, NAME', background=widget_frame['background'], foreground='#fff', font=('Consolas', 12), anchor='w').pack(side='top', fill='x', padx=5, pady=(5, 0))
-        self.widget_name: ClassVar = Label(widget_frame, text='', background='#111', foreground='#fff', anchor='w', font=('Consolas', 12))
+        Label(widget_frame, text='WIDGET CLASS, NAME', background=widget_frame['background'], foreground='#fff', font=(
+            'Consolas', 12), anchor='w').pack(side='top', fill='x', padx=5, pady=(5, 0))
+        self.widget_name: ClassVar = Label(
+            widget_frame, text='', background='#111', foreground='#fff', anchor='w', font=('Consolas', 12))
         self.widget_name.pack(side='top', fill='x', padx=5, pady=5)
-        Label(widget_frame, text='WIDGET DIMENTIONS', background=widget_frame['background'], foreground='#fff', font=('Consolas', 12), anchor='w').pack(side='top', fill='x', padx=5, pady=(5, 0))
-        self.widget_dimensions: ClassVar = Label(widget_frame, text='', background='#111', foreground='#fff', anchor='w', font=('Consolas', 12))
+        Label(widget_frame, text='WIDGET DIMENTIONS', background=widget_frame['background'], foreground='#fff', font=(
+            'Consolas', 12), anchor='w').pack(side='top', fill='x', padx=5, pady=(5, 0))
+        self.widget_dimensions: ClassVar = Label(
+            widget_frame, text='', background='#111', foreground='#fff', anchor='w', font=('Consolas', 12))
         self.widget_dimensions.pack(side='top', fill='x', padx=5, pady=5)
-        Label(widget_frame, text='WIDGET MANAGER', background=widget_frame['background'], foreground='#fff', font=('Consolas', 12), anchor='w').pack(side='top', fill='x', padx=5, pady=(5, 0))
-        self.widget_manager: ClassVar = Label(widget_frame, text='', background='#111', foreground='#fff', anchor='w', font=('Consolas', 12))
+        Label(widget_frame, text='WIDGET MANAGER', background=widget_frame['background'], foreground='#fff', font=(
+            'Consolas', 12), anchor='w').pack(side='top', fill='x', padx=5, pady=(5, 0))
+        self.widget_manager: ClassVar = Label(
+            widget_frame, text='', background='#111', foreground='#fff', anchor='w', font=('Consolas', 12))
         self.widget_manager.pack(side='top', fill='x', padx=5, pady=5)
-        Label(widget_frame, text='MANAGER CONFIG', background=widget_frame['background'], foreground='#fff', font=('Consolas', 12), anchor='w').pack(side='top', fill='x', padx=5, pady=(5, 0))
-        self.manager_config: ClassVar = Label(widget_frame, text='', background='#111', foreground='#fff', anchor='w', font=('Consolas', 12))
+        Label(widget_frame, text='MANAGER CONFIG', background=widget_frame['background'], foreground='#fff', font=(
+            'Consolas', 12), anchor='w').pack(side='top', fill='x', padx=5, pady=(5, 0))
+        self.manager_config: ClassVar = Label(
+            widget_frame, text='', background='#111', foreground='#fff', anchor='w', font=('Consolas', 12))
         self.manager_config.pack(side='top', fill='x', padx=5, pady=5)
-        Label(widget_frame, text='WIDGET PARENT', background=widget_frame['background'], foreground='#fff', font=('Consolas', 12), anchor='w').pack(side='top', fill='x', padx=5, pady=(5, 0))
-        parent_frame: ClassVar = Frame(widget_frame, background=widget_frame['background'])
-        self.widget_perent: ClassVar = Label(parent_frame, text='', background='#111', foreground='#fff', anchor='w', font=('Consolas', 12))
+        Label(widget_frame, text='WIDGET PARENT', background=widget_frame['background'], foreground='#fff', font=(
+            'Consolas', 12), anchor='w').pack(side='top', fill='x', padx=5, pady=(5, 0))
+        parent_frame: ClassVar = Frame(
+            widget_frame, background=widget_frame['background'])
+        self.widget_perent: ClassVar = Label(
+            parent_frame, text='', background='#111', foreground='#fff', anchor='w', font=('Consolas', 12))
         self.widget_perent.pack(side='left', fill='x', expand=True)
-        self.inspect_perent: ClassVar = ttk.Button(parent_frame, text='INSPECT', takefocus=False, style='debugger.small.TButton', command=lambda: self.inspect_widget(self.widget._nametowidget(self.widget.winfo_parent())))
+        self.inspect_perent: ClassVar = ttk.Button(parent_frame, text='INSPECT', takefocus=False, style='debugger.small.TButton',
+                                                   command=lambda: self.inspect_widget(self.widget._nametowidget(self.widget.winfo_parent())))
         self.inspect_perent.state(['disabled'])
         self.inspect_perent.pack(side='left', fill='x', padx=5)
         parent_frame.pack(side='top', fill='x', padx=5, pady=(5, 0))
-        Label(widget_frame, text='WIDGET BINDINGS', background=widget_frame['background'], foreground='#fff', font=('Consolas', 12), anchor='w').pack(side='top', fill='x', padx=5, pady=(5, 0))
-        self.widget_bindings: ClassVar = Label(widget_frame, text='', background='#111', foreground='#fff', anchor='w', font=('Consolas', 12))
+        Label(widget_frame, text='WIDGET BINDINGS', background=widget_frame['background'], foreground='#fff', font=(
+            'Consolas', 12), anchor='w').pack(side='top', fill='x', padx=5, pady=(5, 0))
+        self.widget_bindings: ClassVar = Label(
+            widget_frame, text='', background='#111', foreground='#fff', anchor='w', font=('Consolas', 12))
         self.widget_bindings.pack(side='top', fill='x', padx=5, pady=5)
-        Label(widget_frame, text='WIDGET PROPERTIES', background=widget_frame['background'], foreground='#fff', font=('Consolas', 12), anchor='w').pack(side='top', fill='x', padx=5, pady=(5, 0))
-        properties_frame: ClassVar = Frame(widget_frame, background=widget_frame['background'])
-        properties_text: ClassVar = Frame(properties_frame, background=properties_frame['background'])
-        Label(properties_text, text='WIDGET TEXT:', background='#111', foreground='#fff', anchor='w', font=('Consolas', 12)).pack(side='left', fill='x')
-        self.entry: ClassVar = ttk.Entry(properties_text, style='debugger.TEntry', font=('Consolas', 12))
+        Label(widget_frame, text='WIDGET PROPERTIES', background=widget_frame['background'], foreground='#fff', font=(
+            'Consolas', 12), anchor='w').pack(side='top', fill='x', padx=5, pady=(5, 0))
+        properties_frame: ClassVar = Frame(
+            widget_frame, background=widget_frame['background'])
+        properties_text: ClassVar = Frame(
+            properties_frame, background=properties_frame['background'])
+        Label(properties_text, text='WIDGET TEXT:', background='#111', foreground='#fff',
+              anchor='w', font=('Consolas', 12)).pack(side='left', fill='x')
+        self.entry: ClassVar = ttk.Entry(
+            properties_text, style='debugger.TEntry', font=('Consolas', 12))
         self.entry.state(['disabled'])
-        self.entry.pack(side='left', fill='x', ipady=2, expand=True, padx=(5, 0))
-        self.apply_button: ClassVar = ttk.Button(properties_text, text='APPLY', takefocus=False, style='debugger.small.TButton', command=self.apply_changes)
+        self.entry.pack(side='left', fill='x', ipady=2,
+                        expand=True, padx=(5, 0))
+        self.apply_button: ClassVar = ttk.Button(
+            properties_text, text='APPLY', takefocus=False, style='debugger.small.TButton', command=self.apply_changes)
         self.apply_button.state(['disabled'])
         self.apply_button.pack(side='left', fill='x', padx=5)
         properties_text.pack(side='top', fill='x', pady=(0, 5))
-        properties_image: ClassVar = Frame(properties_frame, background=properties_frame['background'])
-        Label(properties_image, text='WIDGET IMG:', background='#111', foreground='#fff', anchor='w', font=('Consolas', 12)).pack(side='left', fill='x')
-        self.widget_image: ClassVar = ttk.Button(properties_image, text='OPEN IMAGE', takefocus=False, style='debugger.small.TButton', command=self.open_image)
+        properties_image: ClassVar = Frame(
+            properties_frame, background=properties_frame['background'])
+        Label(properties_image, text='WIDGET IMG:', background='#111', foreground='#fff',
+              anchor='w', font=('Consolas', 12)).pack(side='left', fill='x')
+        self.widget_image: ClassVar = ttk.Button(
+            properties_image, text='OPEN IMAGE', takefocus=False, style='debugger.small.TButton', command=self.open_image)
         self.widget_image.state(['disabled'])
         self.widget_image.pack(side='left', fill='x', padx=5)
         properties_image.pack(side='top', fill='x', pady=(0, 5))
-        properties_function: ClassVar = Frame(properties_frame, background=properties_frame['background'])
-        Label(properties_function, text='WIDGET FUNCTION:', background='#111', foreground='#fff', anchor='w', font=('Consolas', 12)).pack(side='left', fill='x')
-        self.widget_function: ClassVar = ttk.Button(properties_function, text='CALL FUNCTION', takefocus=False, style='debugger.small.TButton', command=self.call_function)
+        properties_function: ClassVar = Frame(
+            properties_frame, background=properties_frame['background'])
+        Label(properties_function, text='WIDGET FUNCTION:', background='#111',
+              foreground='#fff', anchor='w', font=('Consolas', 12)).pack(side='left', fill='x')
+        self.widget_function: ClassVar = ttk.Button(
+            properties_function, text='CALL FUNCTION', takefocus=False, style='debugger.small.TButton', command=self.call_function)
         self.widget_function.state(['disabled'])
         self.widget_function.pack(side='left', fill='x', padx=5)
         properties_function.pack(side='top', fill='x')
         properties_frame.pack(side='top', fill='x', padx=5, pady=(5, 0))
-        Label(widget_frame, text='WIDGET CHILDRENS', background=widget_frame['background'], foreground='#fff', font=('Consolas', 12), anchor='w').pack(side='top', fill='x', padx=5, pady=(5, 0))
-        canvas_frame: ClassVar = Frame(widget_frame, background=widget_frame['background'])
-        scrollbar: ClassVar = ttk.Scrollbar(canvas_frame, style='debugger.Vertical.TScrollbar')
-        self.canvas: ClassVar = Canvas(canvas_frame, borderwidth=0, highlightthickness=0, background='#111', yscrollcommand=scrollbar.set)
+        Label(widget_frame, text='WIDGET CHILDRENS', background=widget_frame['background'], foreground='#fff', font=(
+            'Consolas', 12), anchor='w').pack(side='top', fill='x', padx=5, pady=(5, 0))
+        canvas_frame: ClassVar = Frame(
+            widget_frame, background=widget_frame['background'])
+        scrollbar: ClassVar = ttk.Scrollbar(
+            canvas_frame, style='debugger.Vertical.TScrollbar')
+        self.canvas: ClassVar = Canvas(
+            canvas_frame, borderwidth=0, highlightthickness=0, background='#111', yscrollcommand=scrollbar.set)
         scrollbar.configure(command=self.canvas.yview)
-        self.canvas_cards: ClassVar = Frame(self.canvas, background=self.canvas['background'])
-        self.canvas_cards.bind('<Configure>', lambda _: self.canvas.configure(scrollregion=self.canvas.bbox('all')))
-        self.canvas_window: ClassVar = self.canvas.create_window((0, 0), window=self.canvas_cards, anchor='nw')
-        self.canvas.bind('<Configure>', lambda _: self.canvas.itemconfigure(self.canvas_window, width=self.canvas.winfo_width(), height=len(self.canvas_cards.winfo_children()) * 51))
-        self.canvas.pack(side='left', fill='both', expand=True, padx=10, pady=10)
+        self.canvas_cards: ClassVar = Frame(
+            self.canvas, background=self.canvas['background'])
+        self.canvas_cards.bind('<Configure>', lambda _: self.canvas.configure(
+            scrollregion=self.canvas.bbox('all')))
+        self.canvas_window: ClassVar = self.canvas.create_window(
+            (0, 0), window=self.canvas_cards, anchor='nw')
+        self.canvas.bind('<Configure>', lambda _: self.canvas.itemconfigure(
+            self.canvas_window, width=self.canvas.winfo_width(), height=len(self.canvas_cards.winfo_children()) * 51))
+        self.canvas.pack(side='left', fill='both',
+                         expand=True, padx=10, pady=10)
         scrollbar.pack(side='right', fill='y', pady=10, padx=(0, 10))
         canvas_frame.pack(side='top', fill='both', expand=True)
         widget_frame.pack(side='top', fill='both', expand=True, padx=10)
         mid_frame.pack(side='top', fill='both', expand=True)
-        Label(self.main_window, text='PyDeb BY MATEUSZ PERCZAK (Łosiek)', background='#111', foreground='#fff', font=('Consolas', 12), anchor='w').pack(side='top', fill='x', padx=10, pady=(10, 0))
+        Label(self.main_window, text='PyDeb BY MATEUSZ PERCZAK (Łosiek)', background='#111', foreground='#fff', font=(
+            'Consolas', 12), anchor='w').pack(side='top', fill='x', padx=10, pady=(10, 0))
         # show window
         self.main_window.bind('<MouseWheel>', self.on_mouse)
         self.entry.bind('<KeyRelease>', self.entry_diff)
@@ -135,7 +190,8 @@ class Debugger:
             if '<Configure>' in parent_binds:
                 message += '<Configure>, '
             else:
-                self.parent.bind('<Configure>', lambda _: self.load_properties())
+                self.parent.bind(
+                    '<Configure>', lambda _: self.load_properties())
             if '<Motion>' in parent_binds:
                 message += '<Motion>, '
                 self.inspect_button.state(['disabled'])
@@ -145,20 +201,21 @@ class Debugger:
             if '<Key-F2>' in parent_binds:
                 message += '<F2> '
             else:
-                self.main_window.bind('<F2>', self.switch_mode) 
+                self.main_window.bind('<F2>', self.switch_mode)
             if message:
-                print(f'Warning it appears that your root window uses binds {message}that may collide with the debugger.', f'To minimalize conflicts {message}will be disabled!')
+                print(
+                    f'Warning it appears that your root window uses binds {message}that may collide with the debugger.', f'To minimalize conflicts {message}will be disabled!')
             del message, parent_binds
         else:
             self.parent.bind('<Configure>', lambda _: self.load_properties())
             self.main_window.bind('<F5>', self.finish_inspection)
-            self.main_window.bind('<F2>', self.switch_mode) 
+            self.main_window.bind('<F2>', self.switch_mode)
 
     def toggle_inspect(self) -> None:
         if self.inspecting:
             self.stop_inspecting()
         else:
-            self.start_inspecting()      
+            self.start_inspecting()
 
     def stop_inspecting(self) -> None:
         self.inspecting = False
@@ -174,7 +231,8 @@ class Debugger:
 
     def while_inspection(self, _) -> None:
         position: tuple = self.parent.winfo_pointerxy()
-        widget: ClassVar = self.parent.winfo_containing(position[0], position[1])
+        widget: ClassVar = self.parent.winfo_containing(
+            position[0], position[1])
         if widget:
             pass
         if self.widget != widget:
@@ -204,7 +262,8 @@ class Debugger:
                     if key == 'in' or not widget_config[key] or widget_config[key] == 'none':
                         continue
                     self.manager_config['text'] += f'{key}: {widget_config[key]} '
-                self.manager_config['text'] = self.manager_config['text'].upper()
+                self.manager_config['text'] = self.manager_config['text'].upper(
+                )
             del widget_config
             self.widget_perent['text'] = self.widget.winfo_parent()
             self.widget_bindings['text'] = self.widget.bind()
@@ -255,7 +314,8 @@ class Debugger:
         self.img_window.iconphoto(False, self.blank_photo)
         self.img_label: ClassVar = Label(self.img_window, background='#111')
         self.img_label.place(x=0, y=0, relwidth=1, relheight=1)
-        self.img_window.protocol('WM_DELETE_WINDOW', lambda: self.img_window.withdraw())
+        self.img_window.protocol(
+            'WM_DELETE_WINDOW', lambda: self.img_window.withdraw())
         self.img_window.mainloop()
 
     def open_image(self) -> None:
@@ -269,7 +329,8 @@ class Debugger:
 
     def inspect_next(self) -> None:
         if self.widget:
-            parent_childrens: list = self.widget._nametowidget(self.widget.winfo_parent()).winfo_children()
+            parent_childrens: list = self.widget._nametowidget(
+                self.widget.winfo_parent()).winfo_children()
             for window in self.disallowed_windows:
                 for child in parent_childrens:
                     if window == child.winfo_id():
@@ -314,16 +375,22 @@ class Debugger:
             self.add_child(widget)
 
     def update_canvas(self) -> None:
-        self.canvas.itemconfigure(self.canvas_window, width=self.canvas.winfo_width(), height=len(self.widget.winfo_children()) * 51)
+        self.canvas.itemconfigure(self.canvas_window, width=self.canvas.winfo_width(
+        ), height=len(self.widget.winfo_children()) * 51)
         self.canvas.yview_moveto(0)
 
     def add_child(self, widget) -> None:
         if self.allow_self_debug or not widget.winfo_id() in self.disallowed_windows:
-            child_frame: ClassVar = Frame(self.canvas_cards, background=self.main_window['background'])
-            Label(child_frame, text=f'{widget.winfo_class()}', background='#333', foreground='#fff', font=('Consolas', 12), ).pack(side='left', anchor='center', fill='y')
-            Label(child_frame, text=f'POS_X {widget.winfo_x()} POS_Y {widget.winfo_y()} WIDTH {widget.winfo_width()}PX HEIGHT {widget.winfo_height()}PX', background='#111', foreground='#fff', font=('Consolas', 12)).pack(side='left', anchor='center', padx=(10, 0))
-            ttk.Button(child_frame, text='INSPECT', style='debugger.TButton', command=lambda: self.inspect_widget(widget)).pack(side='right', anchor='center', padx=10)
-            child_frame.pack(side='top', fill='x', pady=(5, 0), ipady=5, padx=5)
+            child_frame: ClassVar = Frame(
+                self.canvas_cards, background=self.main_window['background'])
+            Label(child_frame, text=f'{widget.winfo_class()}', background='#333', foreground='#fff', font=(
+                'Consolas', 12), ).pack(side='left', anchor='center', fill='y')
+            Label(child_frame, text=f'POS_X {widget.winfo_x()} POS_Y {widget.winfo_y()} WIDTH {widget.winfo_width()}PX HEIGHT {widget.winfo_height()}PX',
+                  background='#111', foreground='#fff', font=('Consolas', 12)).pack(side='left', anchor='center', padx=(10, 0))
+            ttk.Button(child_frame, text='INSPECT', style='debugger.TButton', command=lambda: self.inspect_widget(
+                widget)).pack(side='right', anchor='center', padx=10)
+            child_frame.pack(side='top', fill='x',
+                             pady=(5, 0), ipady=5, padx=5)
 
     def entry_diff(self, _) -> None:
         if self.widget:
@@ -341,7 +408,7 @@ class Debugger:
     def apply_changes(self) -> None:
         if self.widget:
             if self.widget.winfo_class() in ('Button', 'TButton', 'Label', 'TLabel', 'Radiobutton'):
-                    self.widget['text'] = self.entry.get()
+                self.widget['text'] = self.entry.get()
             elif self.widget.winfo_class() in ('Entry', 'TEntry'):
                 self.widget.delete(0, 'end')
                 self.widget.insert(0, self.entry.get())
