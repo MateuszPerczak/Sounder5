@@ -2,7 +2,7 @@
 
 ## Music player written in python
 
-<span style="color: #FF0000;">Note: This app will be rewritten soon, mainly because of spaghetti cone in one big file :(</span>
+<p style='color:#ef5000'>Note: This app will be rewritten soon, mainly because of spaghetti code in one big file :(</p>
 
 #
 
