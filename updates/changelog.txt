@@ -1,4 +1,2 @@
 Changelog:
-~ Changed theme manager
-~ Restored old dark theme colors
-+ Added custom combobox
+~Fixed playlist names.

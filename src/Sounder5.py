@@ -15,6 +15,7 @@ try:
     from Components.SystemTheme import get_theme
     from Components.SongMenu import SongMenu
     from Components.DirWatcher import DirWatcher
+    from Components.Debugger import Debugger
     from requests import get
     from threading import Thread
     from mutagen.mp3 import MP3
@@ -63,6 +64,9 @@ class Sounder(Tk):
         self.init_ui()
         # init player
         self.init_player()
+        # load Debugger
+        self.bind('<F12>', lambda _: Debugger(self))
+
         # show main panel
         self.after(50, lambda: self.player_panel.lift())
 
@@ -122,7 +126,7 @@ class Sounder(Tk):
             default_settings: dict = {'played_percent': 2, 'menu_position': 'left', 'search_compensation': 0.7, 'delete_missing': False, 'follow': 1, 'crossfade': 100, 'shuffle': False, 'start_playback': False, 'playlist': 'Library', 'repeat': 'None', 'buffer': 'Normal', 'last_song': '',
                                       'volume': 0.5, 'sort_by': 'A-Z', 'scan_subfolders': False, 'geometry': '800x500', 'wheel_acceleration': 1.0, 'updates': True, 'folders': [], 'use_system_theme': True, 'theme': 'Light', 'page': 'Library', 'playlists': {'Favorites': {'Name': 'Favorites', 'Songs': []}}}
             self.settings: dict = {}
-            self.version: tuple = ('0.8.2', '150122')
+            self.version: tuple = ('0.8.3', '040322')
             # load settings
             if isfile(r'Resources\\Settings\\Settings.json'):
                 with open(r'Resources\\Settings\\Settings.json', 'r') as data:
@@ -404,7 +408,7 @@ class Sounder(Tk):
         for playlist in self.settings['playlists']:
             if playlist == 'Favorites':
                 continue
-            ttk.Radiobutton(self.menu_panel, image=self.icons['playlist'][0], text=self.settings['playlists'][playlist]['Name'], compound='left', value=playlist,
+            ttk.Radiobutton(self.menu_panel, image=self.icons['playlist'][0], text=self.settings['playlists'][playlist]['Name'][:14], compound='left', value=playlist,
                             style='menu.TRadiobutton', variable=self.menu_playlist, command=self.show_playlist).pack(side='top', fill='x', padx=10, pady=(10, 0))
         self.menu_panel.pack(side=self.settings['menu_position'], fill='both')
         # player scrollbar
@@ -1031,7 +1035,7 @@ class Sounder(Tk):
 
     def get_playlist_button(self: Tk, playlist: str) -> Union[ttk.Radiobutton, None]:
         try:
-            return list(filter(lambda widget: widget.winfo_class() == 'TRadiobutton' and widget['text'] == self.settings['playlists'][playlist]['Name'], self.menu_panel.winfo_children()))[0]
+            return list(filter(lambda widget: widget.winfo_class() == 'TRadiobutton' and widget['text'] == self.settings['playlists'][playlist]['Name'][:14], self.menu_panel.winfo_children()))[0]
         except Exception as err_obj:
             self.log(err_obj)
 
@@ -1042,7 +1046,7 @@ class Sounder(Tk):
             if selected_playlist in self.settings['playlists'] and selected_playlist != 'Favorites' and new_name.strip():
                 self.get_playlist_button(selected_playlist)[
                     'text'] = new_name[:14]
-                self.settings['playlists'][selected_playlist]['Name'] = new_name[:14]
+                self.settings['playlists'][selected_playlist]['Name'] = new_name[:38]
                 self.song_menu.rename(selected_playlist, new_name[:14])
                 self.playlist_panel.lift()
             self.update_playlist(selected_playlist)
