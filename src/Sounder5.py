@@ -15,7 +15,7 @@ try:
     from Components.SystemTheme import get_theme
     from Components.SongMenu import SongMenu
     from Components.DirWatcher import DirWatcher
-    from Components.Debugger import Debugger
+    # from Components.TkDeb.TkDeb import Debugger
     from requests import get
     from threading import Thread
     from mutagen.mp3 import MP3
@@ -65,10 +65,9 @@ class Sounder(Tk):
         # init player
         self.init_player()
         # load Debugger
-        self.bind('<F12>', lambda _: Debugger(self))
-
+        # self.bind('<F12>', lambda _: Debugger(self))
         # show main panel
-        self.after(50, lambda: self.player_panel.lift())
+        self.after(180, lambda: self.player_panel.lift())
 
     def init_important_panels(self: Tk) -> None:
         try:
@@ -126,7 +125,7 @@ class Sounder(Tk):
             default_settings: dict = {'played_percent': 2, 'menu_position': 'left', 'search_compensation': 0.7, 'delete_missing': False, 'follow': 1, 'crossfade': 100, 'shuffle': False, 'start_playback': False, 'playlist': 'Library', 'repeat': 'None', 'buffer': 'Normal', 'last_song': '',
                                       'volume': 0.5, 'sort_by': 'A-Z', 'scan_subfolders': False, 'geometry': '800x500', 'wheel_acceleration': 1.0, 'updates': True, 'folders': [], 'use_system_theme': True, 'theme': 'Light', 'page': 'Library', 'playlists': {'Favorites': {'Name': 'Favorites', 'Songs': []}}}
             self.settings: dict = {}
-            self.version: tuple = ('0.8.3', '040322')
+            self.version: tuple = ('0.8.4', '070522')
             # load settings
             if isfile(r'Resources\\Settings\\Settings.json'):
                 with open(r'Resources\\Settings\\Settings.json', 'r') as data:
@@ -174,6 +173,7 @@ class Sounder(Tk):
         self.settings['geometry'] = f'{self.geometry()}'
         # save active playlists
         self.settings['playlist'] = self.playlist
+        # save settings
         try:
             with open(r'Resources\\Settings\\Settings.json', 'w') as data:
                 dump(self.settings, data)
@@ -233,6 +233,7 @@ class Sounder(Tk):
             'catamaran 13 bold'), foreground=theme[self.settings['theme']][3], anchor='w', padding=5, width=12)
         self.layout.map('TRadiobutton', background=[('pressed', '!disabled', theme[self.settings['theme']][1]), (
             'active', theme[self.settings['theme']][1]), ('selected', theme[self.settings['theme']][1])])
+
         self.layout.configure('second.TRadiobutton',
                               anchor='center', padding=5, width=6)
         self.layout.configure('third.TRadiobutton',
@@ -1141,7 +1142,7 @@ class Sounder(Tk):
         try:
             path = abspath(path)
             temp_songs: list = self.library.copy()
-            if self.song in temp_songs and path == dirname(self.song):
+            if self.song in temp_songs and path in dirname(self.song):
                 self.song = ''
                 self.refresh_ui()
                 if mixer.music.get_busy():
@@ -1740,8 +1741,9 @@ class Sounder(Tk):
             self.mixer_play(song)
 
     def progress_play(self: Tk, event: Event) -> None:
-        self.mixer_play(self.song, (event.x / self.progress_bar.winfo_width())
-                        * self.songs_cache[self.song]['length'])
+        if self.song in self.songs_cache:
+            self.mixer_play(self.song, (event.x / self.progress_bar.winfo_width())
+                            * self.songs_cache[self.song]['length'])
 
     def button_play(self: Tk) -> None:
         if self.song and self.paused:

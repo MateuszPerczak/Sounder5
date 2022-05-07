@@ -19,7 +19,7 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName=\{#MyAppName}
 DisableProgramGroupPage=yes
-LicenseFile=D:\Python\New Projects\Sounder5\Setup\MIT.txt
+LicenseFile=E:\Python\New Projects\Sounder5\Setup\MIT.txt
 ; Remove the following line to run in administrative install mode (install for all users.)
 PrivilegesRequired=lowest
 OutputBaseFilename=Sounder Setup
