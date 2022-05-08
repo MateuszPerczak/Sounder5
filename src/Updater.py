@@ -182,7 +182,7 @@ class Updater(Tk):
     def get_version(self: object) -> bool:
         try:
             self.server_version: str = get(
-                'https://raw.githubusercontent.com/losek1/Sounder5/master/updates/version.txt').text.strip()
+                'https://raw.githubusercontent.com/MateuszPerczak/Sounder5/master/updates/version.txt').text.strip()
             return True
         except Exception as err_obj:
             self.log(err_obj, 'Unable to connect to server!')
@@ -202,7 +202,7 @@ class Updater(Tk):
 
     def check_package(self: object) -> bool:
         self.update_package = get(
-            'https://raw.githubusercontent.com/losek1/Sounder5/master/updates/package.zip', stream=True)
+            'https://raw.githubusercontent.com/MateuszPerczak/Sounder5/master/updates/package.zip', stream=True)
         if self.update_package.status_code == 200:
             return True
         return False
@@ -253,7 +253,7 @@ class Updater(Tk):
     def verify_package(self, package_bytes: bytes) -> bool:
         try:
             self.server_hash: str = get(
-                'https://raw.githubusercontent.com/losek1/Sounder5/master/updates/hash.txt').text.strip()
+                'https://raw.githubusercontent.com/MateuszPerczak/Sounder5/master/updates/hash.txt').text.strip()
         except Exception as err_obj:
             self.log(err_obj, 'Unable to connect to server!')
             return False

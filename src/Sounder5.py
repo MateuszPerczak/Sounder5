@@ -125,7 +125,7 @@ class Sounder(Tk):
             default_settings: dict = {'played_percent': 2, 'menu_position': 'left', 'search_compensation': 0.7, 'delete_missing': False, 'follow': 1, 'crossfade': 100, 'shuffle': False, 'start_playback': False, 'playlist': 'Library', 'repeat': 'None', 'buffer': 'Normal', 'last_song': '',
                                       'volume': 0.5, 'sort_by': 'A-Z', 'scan_subfolders': False, 'geometry': '800x500', 'wheel_acceleration': 1.0, 'updates': True, 'folders': [], 'use_system_theme': True, 'theme': 'Light', 'page': 'Library', 'playlists': {'Favorites': {'Name': 'Favorites', 'Songs': []}}}
             self.settings: dict = {}
-            self.version: tuple = ('0.8.4', '070522')
+            self.version: tuple = ('0.8.5', '070522')
             # load settings
             if isfile(r'Resources\\Settings\\Settings.json'):
                 with open(r'Resources\\Settings\\Settings.json', 'r') as data:
@@ -1230,7 +1230,7 @@ class Sounder(Tk):
     def check_update(self: Tk) -> None:
         try:
             server_version: str = get(
-                'https://raw.githubusercontent.com/losek1/Sounder5/master/updates/version.txt').text.strip()
+                'https://raw.githubusercontent.com/MateuszPerczak/Sounder5/master/updates/version.txt').text.strip()
             if server_version != self.version[0] and int(server_version.replace('.', '')) > int(self.version[0].replace('.', '')):
                 self.prepare_update_panel(server_version)
                 # show notification

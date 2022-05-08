@@ -1,3 +1,4 @@
 Changelog:
 ~Fixed error that was caused by deleting a folder with subfolders inside and trying to change song progress
 ~Fixed bug that caused gui not to refresh after deleting subfolder with songs
+~Updated internal links to the Github repository
