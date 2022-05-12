@@ -65,6 +65,7 @@ docker run -it sounder-dev
 - difflib
 - ctypes
 - darkdetect
+- autocorrect
 
 ### Sounder logo
 
