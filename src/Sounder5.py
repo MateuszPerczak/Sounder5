@@ -27,6 +27,7 @@ try:
     from typing import Union
     import ctypes
     from time import sleep
+    from autocorrect import Speller
 except ImportError as err:
     exit(err)
 
@@ -122,10 +123,10 @@ class Sounder(Tk):
     def init_settings(self: Tk) -> None:
         try:
             # variables
-            default_settings: dict = {'played_percent': 2, 'menu_position': 'left', 'search_compensation': 0.7, 'delete_missing': False, 'follow': 1, 'crossfade': 100, 'shuffle': False, 'start_playback': False, 'playlist': 'Library', 'repeat': 'None', 'buffer': 'Normal', 'last_song': '',
+            default_settings: dict = {'search_correction': True, 'played_percent': 2, 'menu_position': 'left', 'search_compensation': 0.7, 'delete_missing': False, 'follow': 1, 'crossfade': 100, 'shuffle': False, 'start_playback': False, 'playlist': 'Library', 'repeat': 'None', 'buffer': 'Normal', 'last_song': '',
                                       'volume': 0.5, 'sort_by': 'A-Z', 'scan_subfolders': False, 'geometry': '800x500', 'wheel_acceleration': 1.0, 'updates': True, 'folders': [], 'use_system_theme': True, 'theme': 'Light', 'page': 'Library', 'playlists': {'Favorites': {'Name': 'Favorites', 'Songs': []}}}
             self.settings: dict = {}
-            self.version: tuple = ('0.8.5', '070522')
+            self.version: tuple = ('0.8.6', '130522')
             # load settings
             if isfile(r'Resources\\Settings\\Settings.json'):
                 with open(r'Resources\\Settings\\Settings.json', 'r') as data:
@@ -332,7 +333,7 @@ class Sounder(Tk):
             'navigation': PhotoImage(file=fr'Resources\\Icons\\{self.settings["theme"]}\\navigation.png'),
             'passed': PhotoImage(file=fr'Resources\\Icons\\{self.settings["theme"]}\\passed_time.png'),
             'bug': PhotoImage(file=fr'Resources\\Icons\\{self.settings["theme"]}\\bug.png'),
-            'expand': PhotoImage(file=fr'Resources\\Icons\\{self.settings["theme"]}\\expand.png')
+            'spell': PhotoImage(file=fr'Resources\\Icons\\{self.settings["theme"]}\\spell.png'),
         }
         self.iconbitmap(
             fr'Resources\\Icons\\{self.settings["theme"]}\\icon.ico')
@@ -361,6 +362,9 @@ class Sounder(Tk):
         # search compensation
         self.search_compensation: DoubleVar = DoubleVar(
             value=self.settings['search_compensation'])
+        # search correction
+        self.search_correction: BooleanVar = BooleanVar(
+            value=self.settings['search_correction'])
         # scan subfolders
         self.scan_subfolders: BooleanVar = BooleanVar(
             value=self.settings['scan_subfolders'])
@@ -688,6 +692,15 @@ class Sounder(Tk):
         ttk.Label(tolerance_panel, text='Ignore all').pack(
             side='right', anchor='center', fill='y', padx=10)
         tolerance_panel.pack(side='top', fill='x', pady=10, padx=10)
+        spell_panel: ttk.Frame = ttk.Frame(
+            settings_tolerance, style='second.TFrame')
+        ttk.Label(spell_panel, image=self.icons['spell'], text='Search spelling correction', compound='left').pack(
+            side='left', anchor='center', fill='y')
+        ttk.Radiobutton(spell_panel, text='Off', style='second.TRadiobutton', value=False,
+                        variable=self.search_correction, command=self.change_correction).pack(side='right', anchor='center', padx=(0, 10))
+        ttk.Radiobutton(spell_panel, text='On', style='second.TRadiobutton', value=True,
+                        variable=self.search_correction, command=self.change_correction).pack(side='right', anchor='center', padx=(0, 10))
+        spell_panel.pack(side='top', fill='x', padx=10, pady=(0, 10))
         ttk.Label(settings_tolerance, image=self.icons['info'], text='Note: Sounder will ignore all spelling mistakes if set to lowest (not recomended)!', compound='left').pack(
             side='top', fill='x', padx=10, pady=(0, 10))
         # menu positions
@@ -824,6 +837,7 @@ class Sounder(Tk):
         self.after_job: Union[str, None] = None
         self.songs_queue: list = []
         self.offset: float = 0
+        self.speller: Speller = Speller()
         # set last song
         self.song: str = self.settings['last_song']
         # init mixer
@@ -1377,6 +1391,9 @@ class Sounder(Tk):
         self.settings['search_compensation'] = round(
             self.search_compensation.get(), 1)
 
+    def change_correction(self: Tk) -> None:
+        self.settings['search_correction'] = self.search_correction.get()
+
     def update_thread(self: Tk) -> None:
         Thread(target=self.check_update, daemon=True).start()
 
@@ -1414,6 +1431,8 @@ class Sounder(Tk):
             # apply search
             if search_word:
                 search_word_length: int = len(search_word)
+                if self.settings['search_correction']:
+                    search_word = self.speller(search_word)
                 for song in songs:
                     for token in self.songs_cache[song]['search_tokens']:
                         if song in temp_songs:

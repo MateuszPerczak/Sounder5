@@ -1,0 +1,120 @@
+ERROR:root:'Speller' object has no attribute 'spell'
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1423, in sort_panels
+    if SequenceMatcher(a=token, b=self.speller.spell(search_word)).quick_ratio() >= self.settings['search_compensation']:
+AttributeError: 'Speller' object has no attribute 'spell'
+ERROR:root:'Speller' object has no attribute 'spell'
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1423, in sort_panels
+    if SequenceMatcher(a=token, b=self.speller.spell(search_word)).quick_ratio() >= self.settings['search_compensation']:
+AttributeError: 'Speller' object has no attribute 'spell'
+ERROR:root:'Speller' object has no attribute 'spell'
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1423, in sort_panels
+    if SequenceMatcher(a=token, b=self.speller.spell(search_word)).quick_ratio() >= self.settings['search_compensation']:
+AttributeError: 'Speller' object has no attribute 'spell'
+ERROR:root:'Speller' object has no attribute 'spell'
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1423, in sort_panels
+    if SequenceMatcher(a=token, b=self.speller.spell(search_word)).quick_ratio() >= self.settings['search_compensation']:
+AttributeError: 'Speller' object has no attribute 'spell'
+ERROR:root:'Speller' object has no attribute 'spell'
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1423, in sort_panels
+    if SequenceMatcher(a=token, b=self.speller.spell(search_word)).quick_ratio() >= self.settings['search_compensation']:
+AttributeError: 'Speller' object has no attribute 'spell'
+ERROR:root:'Speller' object has no attribute 'spell'
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1423, in sort_panels
+    if SequenceMatcher(a=token, b=self.speller.spell(search_word)).quick_ratio() >= self.settings['search_compensation']:
+AttributeError: 'Speller' object has no attribute 'spell'
+ERROR:root:'Speller' object has no attribute 'spell'
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1423, in sort_panels
+    if SequenceMatcher(a=token, b=self.speller.spell(search_word)).quick_ratio() >= self.settings['search_compensation']:
+AttributeError: 'Speller' object has no attribute 'spell'
+ERROR:root:'Speller' object has no attribute 'spell'
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1423, in sort_panels
+    if SequenceMatcher(a=token, b=self.speller.spell(search_word)).quick_ratio() >= self.settings['search_compensation']:
+AttributeError: 'Speller' object has no attribute 'spell'
+ERROR:root:'Speller' object has no attribute 'spell'
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1423, in sort_panels
+    if SequenceMatcher(a=token, b=self.speller.spell(search_word)).quick_ratio() >= self.settings['search_compensation']:
+AttributeError: 'Speller' object has no attribute 'spell'
+ERROR:root:'Speller' object has no attribute 'spell'
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1423, in sort_panels
+    if SequenceMatcher(a=token, b=self.speller.spell(search_word)).quick_ratio() >= self.settings['search_compensation']:
+AttributeError: 'Speller' object has no attribute 'spell'
+ERROR:root:'Speller' object has no attribute 'spell'
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1423, in sort_panels
+    if SequenceMatcher(a=token, b=self.speller.spell(search_word)).quick_ratio() >= self.settings['search_compensation']:
+AttributeError: 'Speller' object has no attribute 'spell'
+ERROR:root:'Speller' object has no attribute 'spell'
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1423, in sort_panels
+    if SequenceMatcher(a=token, b=self.speller.spell(search_word)).quick_ratio() >= self.settings['search_compensation']:
+AttributeError: 'Speller' object has no attribute 'spell'
+ERROR:root:'Speller' object has no attribute 'spell'
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1423, in sort_panels
+    if SequenceMatcher(a=token, b=self.speller.spell(search_word)).quick_ratio() >= self.settings['search_compensation']:
+AttributeError: 'Speller' object has no attribute 'spell'
+ERROR:root:'Speller' object has no attribute 'spell'
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1423, in sort_panels
+    if SequenceMatcher(a=token, b=self.speller.spell(search_word)).quick_ratio() >= self.settings['search_compensation']:
+AttributeError: 'Speller' object has no attribute 'spell'
+ERROR:root:'Speller' object has no attribute 'spell'
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1423, in sort_panels
+    if SequenceMatcher(a=token, b=self.speller.spell(search_word)).quick_ratio() >= self.settings['search_compensation']:
+AttributeError: 'Speller' object has no attribute 'spell'
+ERROR:root:'Speller' object has no attribute 'spell'
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1423, in sort_panels
+    if SequenceMatcher(a=token, b=self.speller.spell(search_word)).quick_ratio() >= self.settings['search_compensation']:
+AttributeError: 'Speller' object has no attribute 'spell'
+ERROR:root:'Speller' object has no attribute 'spell'
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1423, in sort_panels
+    if SequenceMatcher(a=token, b=self.speller.spell(search_word)).quick_ratio() >= self.settings['search_compensation']:
+AttributeError: 'Speller' object has no attribute 'spell'
+ERROR:root:'Speller' object has no attribute 'spell'
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1423, in sort_panels
+    if SequenceMatcher(a=token, b=self.speller.spell(search_word)).quick_ratio() >= self.settings['search_compensation']:
+AttributeError: 'Speller' object has no attribute 'spell'
+ERROR:root:'Speller' object has no attribute 'spell'
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1423, in sort_panels
+    if SequenceMatcher(a=token, b=self.speller.spell(search_word)).quick_ratio() >= self.settings['search_compensation']:
+AttributeError: 'Speller' object has no attribute 'spell'
+ERROR:root:'Speller' object has no attribute 'spell'
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1423, in sort_panels
+    if SequenceMatcher(a=token, b=self.speller.spell(search_word)).quick_ratio() >= self.settings['search_compensation']:
+AttributeError: 'Speller' object has no attribute 'spell'
+ERROR:root:'Speller' object has no attribute 'spell'
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1423, in sort_panels
+    if SequenceMatcher(a=token, b=self.speller.spell(search_word)).quick_ratio() >= self.settings['search_compensation']:
+AttributeError: 'Speller' object has no attribute 'spell'
+ERROR:root:'Speller' object has no attribute 'spell'
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1423, in sort_panels
+    if SequenceMatcher(a=token, b=self.speller.spell(search_word)).quick_ratio() >= self.settings['search_compensation']:
+AttributeError: 'Speller' object has no attribute 'spell'
+ERROR:root:'Speller' object has no attribute 'spell'
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1423, in sort_panels
+    if SequenceMatcher(a=token, b=self.speller(search_word)).quick_ratio() >= self.settings['search_compensation']:
+AttributeError: 'Speller' object has no attribute 'spell'
+ERROR:root:'Speller' object has no attribute 'spell'
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1423, in sort_panels
+    if SequenceMatcher(a=token, b=self.speller(search_word)).quick_ratio() >= self.settings['search_compensation']:
+AttributeError: 'Speller' object has no attribute 'spell'
