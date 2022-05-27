@@ -1,4 +1,2 @@
 Changelog:
-+Added spelling correction setting
--Removed unused icons
-~Now updater uses compiled updates that take less space!
++Added support for wav files

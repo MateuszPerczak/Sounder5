@@ -21,6 +21,7 @@ try:
     from mutagen.mp3 import MP3
     from mutagen.flac import FLAC
     from mutagen.oggvorbis import OggVorbis
+    from mutagen.wave import WAVE
     from difflib import SequenceMatcher
     from pygame import mixer
     from win10toast import ToastNotifier
@@ -126,7 +127,7 @@ class Sounder(Tk):
             default_settings: dict = {'search_correction': True, 'played_percent': 2, 'menu_position': 'left', 'search_compensation': 0.7, 'delete_missing': False, 'follow': 1, 'crossfade': 100, 'shuffle': False, 'start_playback': False, 'playlist': 'Library', 'repeat': 'None', 'buffer': 'Normal', 'last_song': '',
                                       'volume': 0.5, 'sort_by': 'A-Z', 'scan_subfolders': False, 'geometry': '800x500', 'wheel_acceleration': 1.0, 'updates': True, 'folders': [], 'use_system_theme': True, 'theme': 'Light', 'page': 'Library', 'playlists': {'Favorites': {'Name': 'Favorites', 'Songs': []}}}
             self.settings: dict = {}
-            self.version: tuple = ('0.8.6', '130522')
+            self.version: tuple = ('0.8.7', '270522')
             # load settings
             if isfile(r'Resources\\Settings\\Settings.json'):
                 with open(r'Resources\\Settings\\Settings.json', 'r') as data:
@@ -1191,7 +1192,7 @@ class Sounder(Tk):
                 for folder in folders:
                     if exists(folder):
                         for file in listdir(folder):
-                            if file.endswith(('.mp3', '.flac', '.ogg')) and file not in self.library:
+                            if file.endswith(('.mp3', '.flac', '.ogg', '.wav')) and file not in self.library:
                                 self.library.append(
                                     abspath(join(folder, file)))
                             elif isdir(join(folder, file)) and file not in ('System Volume Information', '$RECYCLE.BIN') and file not in folders:
@@ -1570,6 +1571,9 @@ class Sounder(Tk):
                 song_artist = song_artist.join(
                     song_metadata['comment']).replace(',', ' ').replace('&', '')
                 search_tokens += f'{song_artist} '
+        elif song.endswith('.wav'):
+            song_metadata = WAVE(song)
+
         # cache data
         self.songs_cache[song] = {'title': song_title, 'artist': song_artist, 'album': album, 'album_art': album_art, 'length': song_metadata.info.length,
                                   'kbps': song_metadata.info.bitrate, 'genre': genre, 'search_tokens': search_tokens.lower().split(), 'plays': 0}
@@ -1700,7 +1704,7 @@ class Sounder(Tk):
                 size = 2048
             if self.settings['buffer'] == 'Fast':
                 size = 512
-            mixer.pre_init(44800, -16, 2, size)
+            mixer.pre_init(192000, -16, 2, size)
             mixer.init()
         except Exception as err_obj:
             self.log(err_obj)
