@@ -28,7 +28,6 @@ try:
     from typing import Union
     import ctypes
     from time import sleep
-    from autocorrect import Speller
 except ImportError as err:
     exit(err)
 
@@ -124,10 +123,10 @@ class Sounder(Tk):
     def init_settings(self: Tk) -> None:
         try:
             # variables
-            default_settings: dict = {'search_correction': True, 'played_percent': 2, 'menu_position': 'left', 'search_compensation': 0.7, 'delete_missing': False, 'follow': 1, 'crossfade': 100, 'shuffle': False, 'start_playback': False, 'playlist': 'Library', 'repeat': 'None', 'buffer': 'Normal', 'last_song': '',
+            default_settings: dict = {'played_percent': 2, 'menu_position': 'left', 'search_compensation': 0.7, 'delete_missing': False, 'follow': 1, 'crossfade': 100, 'shuffle': False, 'start_playback': False, 'playlist': 'Library', 'repeat': 'None', 'buffer': 'Normal', 'last_song': '',
                                       'volume': 0.5, 'sort_by': 'A-Z', 'scan_subfolders': False, 'geometry': '800x500', 'wheel_acceleration': 1.0, 'updates': True, 'folders': [], 'use_system_theme': True, 'theme': 'Light', 'page': 'Library', 'playlists': {'Favorites': {'Name': 'Favorites', 'Songs': []}}}
             self.settings: dict = {}
-            self.version: tuple = ('0.8.7', '270522')
+            self.version: tuple = ('0.8.8', '300522')
             # load settings
             if isfile(r'Resources\\Settings\\Settings.json'):
                 with open(r'Resources\\Settings\\Settings.json', 'r') as data:
@@ -334,7 +333,6 @@ class Sounder(Tk):
             'navigation': PhotoImage(file=fr'Resources\\Icons\\{self.settings["theme"]}\\navigation.png'),
             'passed': PhotoImage(file=fr'Resources\\Icons\\{self.settings["theme"]}\\passed_time.png'),
             'bug': PhotoImage(file=fr'Resources\\Icons\\{self.settings["theme"]}\\bug.png'),
-            'spell': PhotoImage(file=fr'Resources\\Icons\\{self.settings["theme"]}\\spell.png'),
         }
         self.iconbitmap(
             fr'Resources\\Icons\\{self.settings["theme"]}\\icon.ico')
@@ -363,9 +361,6 @@ class Sounder(Tk):
         # search compensation
         self.search_compensation: DoubleVar = DoubleVar(
             value=self.settings['search_compensation'])
-        # search correction
-        self.search_correction: BooleanVar = BooleanVar(
-            value=self.settings['search_correction'])
         # scan subfolders
         self.scan_subfolders: BooleanVar = BooleanVar(
             value=self.settings['scan_subfolders'])
@@ -682,28 +677,15 @@ class Sounder(Tk):
         # search tolerance
         settings_tolerance: ttk.Frame = ttk.Frame(
             self.player_content, style='second.TFrame')
-        tolerance_panel: ttk.Frame = ttk.Frame(
-            settings_tolerance, style='second.TFrame')
-        ttk.Label(tolerance_panel, image=self.icons['search'], text='Search spelling compensation', compound='left').pack(
-            side='left', anchor='center', fill='y')
-        ttk.Label(tolerance_panel, text='Perfection').pack(
-            side='right', anchor='center', fill='y', padx=10)
-        ttk.Scale(tolerance_panel, from_=0.1, to=1, variable=self.search_compensation,
-                  command=self.change_compensation).pack(side='right', anchor='center', fill='x', ipadx=40)
-        ttk.Label(tolerance_panel, text='Ignore all').pack(
-            side='right', anchor='center', fill='y', padx=10)
-        tolerance_panel.pack(side='top', fill='x', pady=10, padx=10)
-        spell_panel: ttk.Frame = ttk.Frame(
-            settings_tolerance, style='second.TFrame')
-        ttk.Label(spell_panel, image=self.icons['spell'], text='Search spelling correction', compound='left').pack(
-            side='left', anchor='center', fill='y')
-        ttk.Radiobutton(spell_panel, text='Off', style='second.TRadiobutton', value=False,
-                        variable=self.search_correction, command=self.change_correction).pack(side='right', anchor='center', padx=(0, 10))
-        ttk.Radiobutton(spell_panel, text='On', style='second.TRadiobutton', value=True,
-                        variable=self.search_correction, command=self.change_correction).pack(side='right', anchor='center', padx=(0, 10))
-        spell_panel.pack(side='top', fill='x', padx=10, pady=(0, 10))
-        ttk.Label(settings_tolerance, image=self.icons['info'], text='Note: Sounder will ignore all spelling mistakes if set to lowest (not recomended)!', compound='left').pack(
-            side='top', fill='x', padx=10, pady=(0, 10))
+
+        ttk.Label(settings_tolerance, image=self.icons['search'], text='Search spelling compensation', compound='left').pack(
+            side='left', anchor='center', fill='y', pady=10, padx=(10, 0))
+        ttk.Label(settings_tolerance, text='Perfection').pack(
+            side='right', anchor='center', fill='y', padx=10, pady=10)
+        ttk.Scale(settings_tolerance, from_=0.4, to=0.8, variable=self.search_compensation,
+                  command=self.change_compensation).pack(side='right', anchor='center', fill='x', ipadx=40, pady=10)
+        ttk.Label(settings_tolerance, text='Normal').pack(
+            side='right', anchor='center', fill='y', padx=10, pady=10)
         # menu positions
         settings_menu: ttk.Frame = ttk.Frame(
             self.player_content, style='second.TFrame')
@@ -838,7 +820,6 @@ class Sounder(Tk):
         self.after_job: Union[str, None] = None
         self.songs_queue: list = []
         self.offset: float = 0
-        self.speller: Speller = Speller()
         # set last song
         self.song: str = self.settings['last_song']
         # init mixer
@@ -1392,9 +1373,6 @@ class Sounder(Tk):
         self.settings['search_compensation'] = round(
             self.search_compensation.get(), 1)
 
-    def change_correction(self: Tk) -> None:
-        self.settings['search_correction'] = self.search_correction.get()
-
     def update_thread(self: Tk) -> None:
         Thread(target=self.check_update, daemon=True).start()
 
@@ -1429,19 +1407,24 @@ class Sounder(Tk):
     def sort_panels(self: Tk, search_word: str, songs: list, refresh_panels: bool = False) -> None:
         try:
             temp_songs: list = []
+            score: float = 0.0
+            ratio: float = 2.0
             # apply search
             if search_word:
-                search_word_length: int = len(search_word)
-                if self.settings['search_correction']:
-                    search_word = self.speller(search_word)
                 for song in songs:
+                    score = 0.0
+                    tokens: int = len(self.songs_cache[song]['search_tokens'])
+                    ratio = (
+                        self.settings['search_compensation'] * (tokens - 1))
                     for token in self.songs_cache[song]['search_tokens']:
                         if song in temp_songs:
                             continue
-                        if SequenceMatcher(a=token, b=search_word).quick_ratio() >= self.settings['search_compensation']:
-                            temp_songs.append(song)
-                        elif search_word == token[:search_word_length]:
-                            temp_songs.append(song)
+                        if search_word in token or search_word == token:
+                            score += 1.0
+                        score += SequenceMatcher(a=token,
+                                                 b=search_word).quick_ratio()
+                    if score >= ratio:
+                        temp_songs.append(song)
             else:
                 temp_songs = songs.copy()
             # apply sort

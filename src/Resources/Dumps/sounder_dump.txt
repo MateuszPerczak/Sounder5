@@ -21,3 +21,53 @@ Traceback (most recent call last):
   File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1720, in mixer_play
     mixer.music.play(start=start)
 pygame.error: Position not implemented for music type
+ERROR:root:can't multiply sequence by non-int of type 'float'
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1456, in sort_panels
+    print(song, score, score * "-")
+TypeError: can't multiply sequence by non-int of type 'float'
+ERROR:root:can't multiply sequence by non-int of type 'float'
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1456, in sort_panels
+    print(song, score, score * "-")
+TypeError: can't multiply sequence by non-int of type 'float'
+ERROR:root:can't multiply sequence by non-int of type 'float'
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1456, in sort_panels
+    print(song, score, score * "-")
+TypeError: can't multiply sequence by non-int of type 'float'
+ERROR:root:can't multiply sequence by non-int of type 'float'
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1456, in sort_panels
+    print(song, score, score * "-")
+TypeError: can't multiply sequence by non-int of type 'float'
+ERROR:root:local variable 'sensitivity' referenced before assignment
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1449, in sort_panels
+    if score > sensitivity:
+UnboundLocalError: local variable 'sensitivity' referenced before assignment
+ERROR:root:local variable 'sensitivity' referenced before assignment
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1449, in sort_panels
+    if score > sensitivity:
+UnboundLocalError: local variable 'sensitivity' referenced before assignment
+ERROR:root:local variable 'sensitivity' referenced before assignment
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1449, in sort_panels
+    if score > sensitivity:
+UnboundLocalError: local variable 'sensitivity' referenced before assignment
+ERROR:root:local variable 'sensitivity' referenced before assignment
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1449, in sort_panels
+    if score > sensitivity:
+UnboundLocalError: local variable 'sensitivity' referenced before assignment
+ERROR:root:local variable 'sensitivity' referenced before assignment
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1449, in sort_panels
+    if score > sensitivity:
+UnboundLocalError: local variable 'sensitivity' referenced before assignment
+ERROR:root:local variable 'tokens' referenced before assignment
+Traceback (most recent call last):
+  File "e:/Python/New Projects/Sounder5/Sounder5.py", line 1434, in sort_panels
+    self.settings['search_compensation'] * (tokens - 1))
+UnboundLocalError: local variable 'tokens' referenced before assignment
