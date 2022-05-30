@@ -1,3 +1,4 @@
 Changelog:
-+Removed old stuff
-~Improved search function
+~Improved search algorithm
+-Removed unused icons
+~Fixed crash when playing wav files 

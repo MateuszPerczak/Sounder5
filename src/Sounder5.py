@@ -78,7 +78,7 @@ class Sounder(Tk):
             ttk.Label(error_content, image=self.icons['error'], text='Something went wrong',
                       compound='top', style='second.TLabel').pack(side='top')
             self.error_label: ttk.Label = ttk.Label(
-                error_content, text='We are unable to display the error message!', style='third.TLabel')
+                error_content, text='If you see this message, something went wrong. Not sure what tho :D', style='third.TLabel')
             self.error_label.pack(side='top')
             ttk.Button(error_content, text='Exit', style='third.TButton',
                        command=self.exit_app).pack(side='top', pady=(50, 0), padx=10)
@@ -123,10 +123,10 @@ class Sounder(Tk):
     def init_settings(self: Tk) -> None:
         try:
             # variables
-            default_settings: dict = {'played_percent': 2, 'menu_position': 'left', 'search_compensation': 0.7, 'delete_missing': False, 'follow': 1, 'crossfade': 100, 'shuffle': False, 'start_playback': False, 'playlist': 'Library', 'repeat': 'None', 'buffer': 'Normal', 'last_song': '',
+            default_settings: dict = {'played_percent': 2, 'menu_position': 'left', 'search_compensation': 0.5, 'delete_missing': False, 'follow': 1, 'crossfade': 100, 'shuffle': False, 'start_playback': False, 'playlist': 'Library', 'repeat': 'None', 'buffer': 'Normal', 'last_song': '',
                                       'volume': 0.5, 'sort_by': 'A-Z', 'scan_subfolders': False, 'geometry': '800x500', 'wheel_acceleration': 1.0, 'updates': True, 'folders': [], 'use_system_theme': True, 'theme': 'Light', 'page': 'Library', 'playlists': {'Favorites': {'Name': 'Favorites', 'Songs': []}}}
             self.settings: dict = {}
-            self.version: tuple = ('0.8.8', '300522')
+            self.version: tuple = ('0.8.9', '300522')
             # load settings
             if isfile(r'Resources\\Settings\\Settings.json'):
                 with open(r'Resources\\Settings\\Settings.json', 'r') as data:
@@ -1407,43 +1407,50 @@ class Sounder(Tk):
     def sort_panels(self: Tk, search_word: str, songs: list, refresh_panels: bool = False) -> None:
         try:
             temp_songs: list = []
-            score: float = 0.0
-            ratio: float = 2.0
+            song_srore: float = 0.0
+            song_scores: dict = {}
+            max_srore: float = 0.0
             # apply search
             if search_word:
                 for song in songs:
-                    score = 0.0
-                    tokens: int = len(self.songs_cache[song]['search_tokens'])
-                    ratio = (
-                        self.settings['search_compensation'] * (tokens - 1))
+                    song_srore = 0.0
                     for token in self.songs_cache[song]['search_tokens']:
-                        if song in temp_songs:
-                            continue
+                        for word in search_word.split():
+                            if word in token:
+                                song_srore += 1.0
+                        song_srore += SequenceMatcher(a=token,
+                                                      b=search_word).quick_ratio()
                         if search_word in token or search_word == token:
-                            score += 1.0
-                        score += SequenceMatcher(a=token,
-                                                 b=search_word).quick_ratio()
-                    if score >= ratio:
+                            song_srore += 2.5
+                    song_scores[song] = song_srore - \
+                        self.settings['search_compensation']
+                    if song_srore > max_srore:
+                        max_srore = song_srore
+                for song in songs:
+                    if song_scores[song] / max_srore > 0.5:
                         temp_songs.append(song)
+                temp_songs.sort(
+                    key=lambda song: song_scores[song], reverse=True)
+
             else:
                 temp_songs = songs.copy()
-            # apply sort
-            if self.settings['sort_by'] == 'A-Z':
-                temp_songs.sort(key=self.sort_songs)
-            elif self.settings['sort_by'] == 'Z-A':
-                temp_songs.sort(key=self.sort_songs, reverse=True)
-            elif self.settings['sort_by'] == 'NOP':
-                temp_songs.sort(key=self.sort_by_plays, reverse=True)
-            if not temp_songs:
-                self.no_songs.pack(side='top', fill='x', pady=5, padx=10)
-            else:
-                self.no_songs.pack_forget()
-            # apply search
-            if self.playlist == 'Library':
-                self.songs = temp_songs.copy()
-            # apply shuffle
-            if self.songs and self.settings['shuffle']:
-                shuffle(self.songs)
+                # apply sort
+                if self.settings['sort_by'] == 'A-Z':
+                    temp_songs.sort(key=self.sort_songs)
+                elif self.settings['sort_by'] == 'Z-A':
+                    temp_songs.sort(key=self.sort_songs, reverse=True)
+                elif self.settings['sort_by'] == 'NOP':
+                    temp_songs.sort(key=self.sort_by_plays, reverse=True)
+                if not temp_songs:
+                    self.no_songs.pack(side='top', fill='x', pady=5, padx=10)
+                else:
+                    self.no_songs.pack_forget()
+                # apply search
+                if self.playlist == 'Library':
+                    self.songs = temp_songs.copy()
+                # apply shuffle
+                if self.songs and self.settings['shuffle']:
+                    shuffle(self.songs)
             # forget panels
             if refresh_panels:
                 for song in filter(lambda song: song in self.library and song in self.song_panels and self.song_panels[song].winfo_ismapped(), self.library):
@@ -1506,7 +1513,7 @@ class Sounder(Tk):
 
     def cache_song(self: Tk, song: str) -> None:
         album_art = self.icons['note']
-        song_title: str = splitext(basename(song))[0]
+        song_title, extension = splitext(basename(song))
         song_artist: str = 'Unknown'
         album: str = 'Unknown'
         genre: str = 'Unknown'
@@ -1559,7 +1566,7 @@ class Sounder(Tk):
 
         # cache data
         self.songs_cache[song] = {'title': song_title, 'artist': song_artist, 'album': album, 'album_art': album_art, 'length': song_metadata.info.length,
-                                  'kbps': song_metadata.info.bitrate, 'genre': genre, 'search_tokens': search_tokens.lower().split(), 'plays': 0}
+                                  'kbps': song_metadata.info.bitrate, 'genre': genre, 'search_tokens': search_tokens.lower().split(), 'extension': extension, 'plays': 0}
         self.songs_cache[song]['search_tokens'].extend(
             [song_title.lower(), song_artist.lower(), album.lower()])
 
@@ -1747,7 +1754,7 @@ class Sounder(Tk):
             self.mixer_play(song)
 
     def progress_play(self: Tk, event: Event) -> None:
-        if self.song in self.songs_cache:
+        if self.song in self.songs_cache and self.songs_cache[self.song]['extension'] not in ('.wav'):
             self.mixer_play(self.song, (event.x / self.progress_bar.winfo_width())
                             * self.songs_cache[self.song]['length'])
 
