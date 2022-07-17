@@ -126,7 +126,7 @@ class Sounder(Tk):
             default_settings: dict = {'played_percent': 2, 'menu_position': 'left', 'search_compensation': 0.5, 'delete_missing': False, 'follow': 1, 'crossfade': 100, 'shuffle': False, 'start_playback': False, 'playlist': 'Library', 'repeat': 'None', 'buffer': 'Normal', 'last_song': '',
                                       'volume': 0.5, 'sort_by': 'A-Z', 'scan_subfolders': False, 'geometry': '800x500', 'wheel_acceleration': 1.0, 'updates': True, 'folders': [], 'use_system_theme': True, 'theme': 'Light', 'page': 'Library', 'playlists': {'Favorites': {'Name': 'Favorites', 'Songs': []}}}
             self.settings: dict = {}
-            self.version: tuple = ('0.8.9', '300522')
+            self.version: tuple = ('0.9.0', '170722')
             # load settings
             if isfile(r'Resources\\Settings\\Settings.json'):
                 with open(r'Resources\\Settings\\Settings.json', 'r') as data:
@@ -797,7 +797,6 @@ class Sounder(Tk):
         self.progress_bar = ttk.Progressbar(
             progress_frame, orient='horizontal', mode='determinate')
         self.progress_bar.pack(side='left', fill='x', expand=True)
-        self.progress_bar.bind('<Button-1>', self.progress_play)
         # song length
         self.song_length: ttk.Label = ttk.Label(
             progress_frame, text='--:--', anchor='center', justify='center', style='sixth.TLabel')
@@ -819,7 +818,6 @@ class Sounder(Tk):
         self.songs: list = []
         self.after_job: Union[str, None] = None
         self.songs_queue: list = []
-        self.offset: float = 0
         # set last song
         self.song: str = self.settings['last_song']
         # init mixer
@@ -1431,7 +1429,6 @@ class Sounder(Tk):
                         temp_songs.append(song)
                 temp_songs.sort(
                     key=lambda song: song_scores[song], reverse=True)
-
             else:
                 temp_songs = songs.copy()
                 # apply sort
@@ -1699,15 +1696,13 @@ class Sounder(Tk):
         except Exception as err_obj:
             self.log(err_obj)
 
-    def mixer_play(self: Tk, song: str, start: float = 0) -> None:
+    def mixer_play(self: Tk, song: str) -> None:
         try:
-
-            if self.settings['last_song'] and self.settings['last_song'] in self.songs_cache and (self.progress_bar['value'] - self.offset) >= (self.songs_cache[self.settings['last_song']]['length'] / self.settings['played_percent']):
+            if self.settings['last_song'] and self.settings['last_song'] in self.songs_cache and self.progress_bar['value'] >= (self.songs_cache[self.settings['last_song']]['length'] / self.settings['played_percent']):
                 self.songs_cache[self.settings['last_song']]['plays'] += 1
             if exists(song):
                 mixer.music.load(song)
-                self.offset = start
-                mixer.music.play(start=start)
+                mixer.music.play()
                 self.paused = False
                 self.song = self.settings['last_song'] = song
                 self.update_progress_info(song)
@@ -1753,10 +1748,14 @@ class Sounder(Tk):
                     shuffle(self.songs)
             self.mixer_play(song)
 
-    def progress_play(self: Tk, event: Event) -> None:
-        if self.song in self.songs_cache and self.songs_cache[self.song]['extension'] not in ('.wav'):
-            self.mixer_play(self.song, (event.x / self.progress_bar.winfo_width())
-                            * self.songs_cache[self.song]['length'])
+    # def progress_play(self: Tk, event: Event) -> None:
+    #     if self.song in self.songs_cache and not self.songs_cache[self.song]['extension'] in ('.wav',):
+    #         print(event.x / self.progress_bar.winfo_width(),
+    #               self.songs_cache[self.song]['length'], (
+    #                   event.x / self.progress_bar.winfo_width())
+    #               * self.songs_cache[self.song]['length'])
+    #         self.mixer_play(self.song, (event.x / self.progress_bar.winfo_width())
+    #                         * self.songs_cache[self.song]['length'])
 
     def button_play(self: Tk) -> None:
         if self.song and self.paused:
@@ -1788,8 +1787,7 @@ class Sounder(Tk):
     def mixer_thread(self: Tk) -> None:
         self.mixer_active = True
         if mixer.music.get_busy() and self.song:
-            abs_pos: float = mixer.music.get_pos() / 1000
-            position: float = abs_pos + self.offset
+            position: float = mixer.music.get_pos() / 1000
             self.progress_bar['value'] = position
             self.time_passed['text'] = f'{int(divmod(position, 60)[0])}:{str(int(divmod(position, 60)[1])).zfill(2)}'
             self.after(150, self.mixer_thread)

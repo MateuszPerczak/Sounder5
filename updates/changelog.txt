@@ -1,4 +1,8 @@
 Changelog:
-~Improved search algorithm
--Removed unused icons
-~Fixed crash when playing wav files 
+- Removed experimental progress play
+--------------------------------------------------
+Sounder5 is now deprecated.
+This is a last update!
+
+Cheers <3
+Mateusz Perczak
